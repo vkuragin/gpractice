@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/vk23/gpractice"
 	"github.com/vk23/gpractice/model"
+	"github.com/vk23/gpractice/repo"
 	"log"
 	"os"
 	"time"
@@ -32,7 +33,7 @@ func main() {
 
 func execute(action string, id uint64, date string, minutes uint64) {
 	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
-	gp := gpractice.GPractice{}
+	gp := initGPractice()
 
 	item := model.Item{Date: date, Duration: uint64(minutes * 60 * 1000)}
 	switch Action(action) {
@@ -55,4 +56,10 @@ func execute(action string, id uint64, date string, minutes uint64) {
 		log.Fatalf("Unknown action: %v", action)
 		os.Exit(1)
 	}
+}
+
+func initGPractice() gpractice.GPractice {
+	m := make(map[uint64]model.Item, 0)
+	gp := gpractice.GPractice{Repo: &repo.StubRepo{m}}
+	return gp
 }
