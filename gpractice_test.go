@@ -14,11 +14,11 @@ const (
 )
 
 var gPractice GPractice
-var items map[string]model.Item
+var items map[uint64]model.Item
 
 func setupTestCase(t *testing.T) func(t *testing.T) {
-	items = map[string]model.Item{
-		DATE: {Date: DATE, Duration: DURATION},
+	items = map[uint64]model.Item{
+		1: {Id: 1, Date: DATE, Duration: DURATION},
 	}
 	gPractice = GPractice{&repo.StubRepo{Map: items}}
 	return func(t *testing.T) {
@@ -31,8 +31,8 @@ func TestAdd(t *testing.T) {
 		item model.Item
 	}
 
-	var existing = model.Item{Date: DATE, Duration: DURATION}
 	var notExisting = model.Item{Date: DATE2, Duration: DURATION}
+	var existing = model.Item{Id: 1, Date: DATE2, Duration: DURATION}
 
 	tests := []struct {
 		name string
@@ -40,7 +40,7 @@ func TestAdd(t *testing.T) {
 		want model.Item
 	}{
 		{"new", args{notExisting}, notExisting},
-		{"update", args{existing}, model.Item{DATE, DURATION * 2}},
+		{"update", args{existing}, model.Item{existing.Id, existing.Date, existing.Duration * 2}},
 	}
 
 	for _, tt := range tests {
@@ -55,23 +55,23 @@ func TestAdd(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	type args struct {
-		date string
+		id uint64
 	}
 
-	var testItem = model.Item{Date: DATE, Duration: DURATION}
+	var testItem = model.Item{Id: 1, Date: DATE, Duration: DURATION}
 
 	tests := []struct {
 		name string
 		args args
 		want model.Item
 	}{
-		{"get", args{DATE}, testItem},
+		{"get", args{1}, testItem},
 		//{"get", args{DATE2}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			setupTestCase(t)
-			if got := gPractice.Get(tt.args.date); !reflect.DeepEqual(got, tt.want) {
+			if got := gPractice.Get(tt.args.id); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -79,7 +79,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	var testItem = model.Item{Date: DATE, Duration: DURATION}
+	var testItem = model.Item{Id: 1, Date: DATE, Duration: DURATION}
 
 	tests := []struct {
 		name string
@@ -104,8 +104,8 @@ func TestDelete(t *testing.T) {
 		item model.Item
 	}
 
-	var testItem = model.Item{Date: DATE, Duration: DURATION}
-	var nonExisting = model.Item{Date: DATE2}
+	var testItem = model.Item{Id: 1, Date: DATE, Duration: DURATION}
+	var nonExisting = model.Item{Id: 0, Date: DATE2, Duration: DURATION}
 
 	tests := []struct {
 		name string
@@ -125,35 +125,12 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestDeleteByDate(t *testing.T) {
-	type args struct {
-		date string
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{"delete", args{DATE}, true},
-		{"delete", args{DATE2}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			setupTestCase(t)
-			if got := gPractice.DeleteByDate(tt.args.date); got != tt.want {
-				t.Errorf("DeleteByDate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetReport(t *testing.T) {
 	tests := []struct {
 		name string
 		want model.Report
 	}{
-		{"report", model.Report{}},
+		{"report", model.Report{Days: 1, Since: DATE, Total: model.ReportTotal{Days: 0, Hours: 0, Minutes: 0, Seconds: 15}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -24,13 +24,14 @@ func main() {
 	actionFlag := flag.String("action", string(ALL), "one of possible actions: all, add, del, get, report")
 	dateFlag := flag.String("date", time.Now().Format("2006-01-02"), "practice date yyyy-MM-dd")
 	minutesFlag := flag.Uint64("minutes", 0, "practice time in minutes")
+	idFlag := flag.Uint64("id", 0, "id")
 	flag.Parse()
 
-	execute(*actionFlag, *dateFlag, *minutesFlag)
+	execute(*actionFlag, *idFlag, *dateFlag, *minutesFlag)
 }
 
-func execute(action string, date string, minutes uint64) {
-	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v]", action, date, minutes))
+func execute(action string, id uint64, date string, minutes uint64) {
+	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
 	gp := gpractice.GPractice{}
 
 	item := model.Item{Date: date, Duration: uint64(minutes * 60 * 1000)}
@@ -42,7 +43,7 @@ func execute(action string, date string, minutes uint64) {
 		item := gp.Add(item)
 		log.Println(fmt.Sprintf("result: %v", item))
 	case GET:
-		item := gp.Get(date)
+		item := gp.Get(id)
 		log.Println(fmt.Sprintf("result: %v", item))
 	case DEL:
 		res := gp.Delete(item)
