@@ -1,8 +1,8 @@
 package repo
 
-import "github.com/vk23/gpractice/model"
-
-//import "github.com/vk23/gpractice"
+import (
+	"github.com/vk23/gpractice/model"
+)
 
 type Repository interface {
 	Save(item model.Item) model.Item
@@ -42,9 +42,10 @@ func (r *StubRepo) Get(date string) model.Item {
 }
 
 func (r *StubRepo) GetAll() []model.Item {
-	result := make([]model.Item, len(r.Map))
+	result, i := make([]model.Item, len(r.Map)), 0
 	for _, v := range r.Map {
-		result = append(result, v)
+		result[i] = v
+		i++
 	}
 	return result
 }
