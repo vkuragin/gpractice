@@ -4,10 +4,13 @@ import (
 	"github.com/vk23/gpractice/model"
 )
 
+const (
+	NewId = 0
+)
+
 type Repository interface {
 	Save(item model.Item) model.Item
-	Delete(item model.Item) bool
-	DeleteById(id uint64) bool
+	Delete(id uint64) bool
 	Get(id uint64) model.Item
 	GetAll() []model.Item
 }
@@ -17,15 +20,14 @@ type StubRepo struct {
 }
 
 func (r *StubRepo) Save(item model.Item) model.Item {
+	if item.Id == NewId {
+		item.Id = r.nextId()
+	}
 	r.Map[item.Id] = item
 	return r.Map[item.Id]
 }
 
-func (r *StubRepo) Delete(item model.Item) bool {
-	return r.DeleteById(item.Id)
-}
-
-func (r *StubRepo) DeleteById(id uint64) bool {
+func (r *StubRepo) Delete(id uint64) bool {
 	if _, ok := r.Map[id]; ok {
 		delete(r.Map, id)
 		return true
@@ -47,4 +49,20 @@ func (r *StubRepo) GetAll() []model.Item {
 		i++
 	}
 	return result
+}
+
+func (r *StubRepo) nextId() uint64 {
+	max := findMaxId(r.Map)
+	max++
+	return max
+}
+
+func findMaxId(items map[uint64]model.Item) uint64 {
+	max := uint64(1)
+	for k := range items {
+		if k > max {
+			max = k
+		}
+	}
+	return max
 }

@@ -13,10 +13,8 @@ type GPractice struct {
 	Repo repo.Repository
 }
 
-func (gp *GPractice) Add(item model.Item) model.Item {
+func (gp *GPractice) Save(item model.Item) model.Item {
 	log.Println(fmt.Sprintf("saving item %v", item))
-	stored := gp.Repo.Get(item.Id)
-	item.Duration += stored.Duration
 	return gp.Repo.Save(item)
 }
 
@@ -30,14 +28,9 @@ func (gp *GPractice) GetAll() []model.Item {
 	return gp.Repo.GetAll()
 }
 
-func (gp *GPractice) Delete(item model.Item) bool {
-	log.Println(fmt.Sprintf("Deleting item %v", item))
-	return gp.Repo.Delete(item)
-}
-
-func (gp *GPractice) DeleteById(id uint64) bool {
-	log.Println(fmt.Sprintf("Deleting item by id = %d", id))
-	return gp.Repo.DeleteById(id)
+func (gp *GPractice) Delete(id uint64) bool {
+	log.Println(fmt.Sprintf("Deleting item by id %v", id))
+	return gp.Repo.Delete(id)
 }
 
 func (gp *GPractice) GetReport() model.Report {

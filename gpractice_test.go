@@ -26,28 +26,28 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestSave(t *testing.T) {
 	type args struct {
 		item model.Item
 	}
 
 	var notExisting = model.Item{Date: DATE2, Duration: DURATION}
-	var existing = model.Item{Id: 1, Date: DATE2, Duration: DURATION}
+	var existing = model.Item{Id: 1, Date: DATE, Duration: DURATION}
 
 	tests := []struct {
 		name string
 		args args
 		want model.Item
 	}{
-		{"new", args{notExisting}, notExisting},
-		{"update", args{existing}, model.Item{existing.Id, existing.Date, existing.Duration * 2}},
+		{"update", args{existing}, existing},
+		{"new", args{notExisting}, model.Item{Id: 2, Date: DATE2, Duration: DURATION}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			setupTestCase(t)
-			if got := gPractice.Add(tt.args.item); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Add() = %v, want %v", got, tt.want)
+			if got := gPractice.Save(tt.args.item); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Save() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -101,24 +101,21 @@ func TestGetAll(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type args struct {
-		item model.Item
+		id uint64
 	}
-
-	var testItem = model.Item{Id: 1, Date: DATE, Duration: DURATION}
-	var nonExisting = model.Item{Id: 0, Date: DATE2, Duration: DURATION}
 
 	tests := []struct {
 		name string
 		args args
 		want bool
 	}{
-		{"delete", args{testItem}, true},
-		{"delete", args{nonExisting}, false},
+		{"delete", args{1}, true},
+		{"delete", args{0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			setupTestCase(t)
-			if got := gPractice.Delete(tt.args.item); got != tt.want {
+			if got := gPractice.Delete(tt.args.id); got != tt.want {
 				t.Errorf("Delete() = %v, want %v", got, tt.want)
 			}
 		})
