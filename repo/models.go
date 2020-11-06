@@ -1,4 +1,4 @@
-package model
+package repo
 
 type Item struct {
 	Id       uint64

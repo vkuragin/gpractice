@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vk23/gpractice"
-	"github.com/vk23/gpractice/model"
 	"github.com/vk23/gpractice/repo"
 	"log"
 	"os"
@@ -35,25 +34,25 @@ func execute(action string, id uint64, date string, minutes uint64) {
 	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
 	gp := initGPractice()
 
-	item := model.Item{Id: id, Date: date, Duration: uint64(minutes * 60 * 1000)}
+	item := repo.Item{Id: id, Date: date, Duration: uint64(minutes * 60 * 1000)}
 	switch Action(action) {
 	case ALL:
-		all := gp.GetAll()
-		log.Println(fmt.Sprintf("result: %v", all))
+		all, err := gp.GetAll()
+		log.Printf("result: %v\n, error: %v\n", all, err)
 	case ADD:
-		item := gp.Save(item)
-		log.Println(fmt.Sprintf("result: %v", item))
+		item, err := gp.Save(item)
+		log.Printf("result: %v\n, error: %v\n", item, err)
 	case GET:
-		item := gp.Get(item.Id)
-		log.Println(fmt.Sprintf("result: %v", item))
+		item, err := gp.Get(item.Id)
+		log.Printf("result: %v\n, error: %v\n", item, err)
 	case DEL:
-		res := gp.Delete(item.Id)
-		log.Println(fmt.Sprintf("result: %v", res))
+		res, err := gp.Delete(item.Id)
+		log.Printf("result: %v\n, error: %v\n", res, err)
 	case REPORT:
-		report := gp.GetReport()
-		log.Println(fmt.Sprintf("result: %v", report))
+		report, err := gp.GetReport()
+		log.Printf("result: %v\n, error: %v\n", report, err)
 	default:
-		log.Fatalf("Unknown action: %v", action)
+		log.Fatalf("Unknown action: %v\n", action)
 		os.Exit(1)
 	}
 }

@@ -3,7 +3,6 @@ package repo
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/vk23/gpractice/model"
 	"log"
 	"time"
 )
@@ -22,6 +21,7 @@ func (r *MySQLRepo) Init() {
 	if err != nil {
 		panic("failed to initialize db connection")
 	}
+
 	// See "Important settings" section.
 	db.SetConnMaxLifetime(time.Minute * 2)
 	db.SetMaxOpenConns(3)
@@ -30,106 +30,113 @@ func (r *MySQLRepo) Init() {
 	return
 }
 
-func (r *MySQLRepo) Save(item model.Item) model.Item {
-	result := model.Item{}
+func (r *MySQLRepo) Save(item Item) (Item, error) {
 	if item.Id == NewId {
-		result = r.insert(item)
+		return r.insert(item)
 	} else {
-		result = r.update(item)
+		return r.update(item)
 	}
-	log.Printf("Save result=%v\n", result)
-	return result
 }
 
-func (r *MySQLRepo) insert(item model.Item) model.Item {
-	q := "INSERT INTO practice (date, duration) VALUES (?,?)"
+func (r *MySQLRepo) insert(item Item) (Item, error) {
+	q := "INSERT INTO practice (date, duration) VALUES (?, ?)"
 	stmt, err := r.db.Prepare(q)
-	//TODO: fix panics
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
+
 	res, err := stmt.Exec(item.Date, item.Duration)
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
+
 	id, err := res.LastInsertId()
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
+
 	item.Id = uint64(id)
-	return item
+	return item, nil
 }
 
-func (r *MySQLRepo) update(item model.Item) model.Item {
+func (r *MySQLRepo) update(item Item) (Item, error) {
 	q := "UPDATE practice SET date=?, duration=? where id=?"
 	stmt, err := r.db.Prepare(q)
-	//TODO: fix panics
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
+
 	_, err = stmt.Exec(item.Date, item.Duration, item.Id)
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
-	return item
+
+	return item, nil
 }
 
-func (r *MySQLRepo) Delete(id uint64) bool {
+func (r *MySQLRepo) Delete(id uint64) (bool, error) {
 	q := "DELETE FROM practice WHERE id=?"
 	stmt, err := r.db.Prepare(q)
-	//TODO: fix panics
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
+
 	res, err := stmt.Exec(id)
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
+
 	count, err := res.RowsAffected()
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
-	return count > 0
+
+	return count > 0, nil
 }
 
-func (r *MySQLRepo) Get(id uint64) model.Item {
+func (r *MySQLRepo) Get(id uint64) (Item, error) {
 	q := "SELECT id, date, duration FROM practice WHERE id=?"
 	stmt, err := r.db.Prepare(q)
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
+
 	row := stmt.QueryRow(id)
-	item := model.Item{}
+	item := Item{}
 	err = row.Scan(&item.Id, &item.Date, &item.Duration)
 	if err != nil {
-		panic(err.Error())
+		return Item{}, err
 	}
-	log.Printf("Get result=%v%n", item)
 
-	return item
+	return item, nil
 }
 
-func (r *MySQLRepo) GetAll() []model.Item {
+func (r *MySQLRepo) GetAll() ([]Item, error) {
+	var items []Item
+
 	q := "SELECT id, date, duration FROM practice"
 	stmt, err := r.db.Prepare(q)
 	if err != nil {
-		panic(err.Error())
-	}
-	rows, err := stmt.Query()
-	if err != nil {
-		panic(err.Error())
+		return items, err
 	}
 
-	var items []model.Item
+	rows, err := stmt.Query()
+	if err != nil {
+		return items, err
+	}
+
+	count := 0
 	for rows.Next() {
-		i := model.Item{}
+		count++
+		i := Item{}
 		err := rows.Scan(&i.Id, &i.Date, &i.Duration)
 		if err != nil {
-			panic(err.Error())
+			log.Printf("Failed to scan item: %s", err.Error())
+			continue
 		}
 		items = append(items, i)
 	}
 
-	log.Printf("Items=%+v, count=%v", items, len(items))
-	return items
+	log.Printf("Items=%+v, succesfully processed %v out of %v", items, len(items), count)
+	return items, nil
 }
