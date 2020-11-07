@@ -19,6 +19,11 @@ type Report struct {
 	Total ReportTotal
 }
 
+type PageData struct {
+	Items  []Item
+	Report Report
+}
+
 func MsToReportTotal(ms uint64) ReportTotal {
 	secs := ms / 1000.0
 	mins := secs / 60.0
