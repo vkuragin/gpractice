@@ -20,6 +20,7 @@ type Report struct {
 }
 
 type PageData struct {
+	Item   Item
 	Items  []Item
 	Report Report
 }
