@@ -1,4 +1,4 @@
-module github.com/vk23/gpractice
+module github.com/vkuragin/gpractice
 
 go 1.15
 

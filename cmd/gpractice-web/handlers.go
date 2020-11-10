@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/vk23/gpractice"
-	"github.com/vk23/gpractice/repo"
+	"github.com/vkuragin/gpractice"
+	"github.com/vkuragin/gpractice/repo"
 	"io/ioutil"
 	"log"
 	"net/http"

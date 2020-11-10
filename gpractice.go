@@ -2,7 +2,7 @@ package gpractice
 
 import (
 	"fmt"
-	"github.com/vk23/gpractice/repo"
+	"github.com/vkuragin/gpractice/repo"
 	"log"
 	"sort"
 	"time"
