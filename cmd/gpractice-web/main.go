@@ -13,16 +13,15 @@ func main() {
 	log.Printf("starting\n")
 
 	// parse flags
-	templatePath := flag.String("template", "", "path to custom html template")
+	templatePath := flag.String("tplpath", "", "path to custom html template")
+	templateRefresh := flag.Bool("tplfresh", false, "parse template each time")
 	flag.Parse()
 
 	// initialize services
 	sqlRepo := repo.MySQLRepo{}
 	sqlRepo.Init()
 	gPractice := gpractice.GPractice{&sqlRepo}
-
-	//TODO: cache template
-	tmplt := getTemplate(*templatePath)
+	holder := tplHolder{refresh: *templateRefresh, tplPath: *templatePath}
 
 	router := mux.NewRouter()
 
@@ -36,7 +35,7 @@ func main() {
 	router.HandleFunc("/rest/{id}", restHandler.restDelete()).Methods(http.MethodDelete)
 
 	// web app endpoints
-	appHandler := appHandler{gPractice, tmplt}
+	appHandler := appHandler{gPractice, holder}
 	router.HandleFunc("/app", appHandler.appAll()).Methods(http.MethodGet)
 	router.HandleFunc("/app/", appHandler.appAll()).Methods(http.MethodGet)
 	router.HandleFunc("/app", appHandler.appAdd()).Methods(http.MethodPost)

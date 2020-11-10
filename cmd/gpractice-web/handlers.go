@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vk23/gpractice"
 	"github.com/vk23/gpractice/repo"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -90,14 +89,20 @@ func (h *restHandler) restDelete() func(http.ResponseWriter, *http.Request) {
 }
 
 type appHandler struct {
-	gp    gpractice.GPractice
-	tmplt *template.Template
+	gp     gpractice.GPractice
+	holder tplHolder
 }
 
 func (h *appHandler) appAll() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pageData := getAll(w, h.gp)
-		err := h.tmplt.Execute(w, pageData)
+		tpl, err := h.holder.getTemplate()
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+		err = tpl.Execute(w, pageData)
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
 			http.Error(w, "Template error", http.StatusInternalServerError)
@@ -114,7 +119,14 @@ func (h *appHandler) appAdd() func(http.ResponseWriter, *http.Request) {
 		}
 		item = addItem(w, h.gp, item)
 		pageData := getAll(w, h.gp)
-		err := h.tmplt.Execute(w, pageData)
+
+		tpl, err := h.holder.getTemplate()
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+		err = tpl.Execute(w, pageData)
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
 			http.Error(w, "Template error", http.StatusInternalServerError)
@@ -128,7 +140,14 @@ func (h *appHandler) appGet() func(http.ResponseWriter, *http.Request) {
 		pageData := repo.PageData{}
 		item := getItem(w, h.gp, r)
 		pageData.Item = item
-		err := h.tmplt.Execute(w, pageData)
+
+		tpl, err := h.holder.getTemplate()
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+		err = tpl.Execute(w, pageData)
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
 			http.Error(w, "Template error", http.StatusInternalServerError)
@@ -145,7 +164,14 @@ func (h *appHandler) appUpdate() func(http.ResponseWriter, *http.Request) {
 		}
 		item = addItem(w, h.gp, item)
 		pageData := getAll(w, h.gp)
-		err := h.tmplt.Execute(w, pageData)
+
+		tpl, err := h.holder.getTemplate()
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+		err = tpl.Execute(w, pageData)
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
 			http.Error(w, "Template error", http.StatusInternalServerError)

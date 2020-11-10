@@ -2,7 +2,6 @@ package main
 
 import (
 	"html/template"
-	"log"
 )
 
 var defaultHtmlTemplate = `
@@ -107,20 +106,26 @@ var defaultHtmlTemplate = `
 </html>
 `
 
-func getTemplate(templatePath string) *template.Template {
-	var result *template.Template
+type tplHolder struct {
+	refresh bool
+	tplPath string
+	tpl     *template.Template
+}
+
+func (h *tplHolder) getTemplate() (*template.Template, error) {
 	var err error
 
-	if templatePath != "" {
-		result, err = template.ParseFiles(templatePath)
-	} else {
-		tpl := template.New("defaultHtmlTemplate")
-		result, err = tpl.Parse(defaultHtmlTemplate)
+	if h.refresh || h.tpl == nil {
+		if h.tplPath != "" {
+			h.tpl, err = template.ParseFiles(h.tplPath)
+		} else {
+			tpl := template.New("defaultHtmlTemplate")
+			h.tpl, err = tpl.Parse(defaultHtmlTemplate)
+		}
 	}
-
 	if err != nil {
-		log.Fatalf("Error template: %v\n", err)
+		return nil, err
 	}
 
-	return result
+	return h.tpl, nil
 }
