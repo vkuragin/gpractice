@@ -56,7 +56,7 @@ var defaultHtmlTemplate = `
             </div>
             <div class="trow">
                 <label for="durationInput">Duration</label>
-                <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}>
+                <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}s>
             </div>
             <input type="submit" id="saveButton" value="save">
         </form>
@@ -72,7 +72,7 @@ var defaultHtmlTemplate = `
             <div class="row">
                 <p class="col">{{ .Report.Days }}</p>
                 <p class="col">{{ .Report.Since }}</p>
-                <p class="col">{{ .Report.Total.Minutes }}</p>
+                <p class="col">{{ .Report.Total.Days }}d {{ .Report.Total.Hours }}h {{ .Report.Total.Minutes }}m {{ .Report.Total.Seconds }}s</p>
             </div>
         </div>
         {{ end }}
