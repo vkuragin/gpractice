@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// MySQL implementation of Repository interface
 type MySQLRepo struct {
 	db *sql.DB
 }

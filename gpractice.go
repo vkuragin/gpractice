@@ -8,7 +8,9 @@ import (
 	"time"
 )
 
+// Main service
 type GPractice struct {
+	// Repository, implementations: StubRepo, MySQLRepo
 	Repo repo.Repository
 }
 

@@ -15,6 +15,7 @@ type Repository interface {
 	GetAll() ([]Item, error)
 }
 
+// Stub implementation of Repository interface (backed by map[int]Item)
 type StubRepo struct {
 	Map map[int]Item
 }
