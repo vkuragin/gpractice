@@ -19,7 +19,7 @@ func (gp *GPractice) Save(item repo.Item) (repo.Item, error) {
 	return saved, err
 }
 
-func (gp *GPractice) Get(id uint64) (repo.Item, error) {
+func (gp *GPractice) Get(id int) (repo.Item, error) {
 	log.Printf("Getting item by id: %d\n", id)
 	item, err := gp.Repo.Get(id)
 	log.Printf("Getting item by id: %d, result: %v\n", id, item)
@@ -33,7 +33,7 @@ func (gp *GPractice) GetAll() ([]repo.Item, error) {
 	return items, err
 }
 
-func (gp *GPractice) Delete(id uint64) (bool, error) {
+func (gp *GPractice) Delete(id int) (bool, error) {
 	log.Println(fmt.Sprintf("Deleting item by id %v\n", id))
 	return gp.Repo.Delete(id)
 }
@@ -47,7 +47,7 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 
 	sortByDate(items)
 
-	earliest, days, total := time.Now(), 0, uint64(0)
+	earliest, days, total := time.Now(), 0, 0
 	prev := time.Now()
 	for _, v := range items {
 		d, e := time.Parse("2006-01-02", v.Date)

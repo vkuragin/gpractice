@@ -13,10 +13,10 @@ const (
 )
 
 var gPractice GPractice
-var items map[uint64]repo.Item
+var items map[int]repo.Item
 
 func setupTestCase(t *testing.T) func(t *testing.T) {
-	items = map[uint64]repo.Item{
+	items = map[int]repo.Item{
 		1: {Id: 1, Date: DATE, Duration: DURATION},
 	}
 	gPractice = GPractice{&repo.StubRepo{Map: items}}
@@ -54,7 +54,7 @@ func TestSave(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	type args struct {
-		id uint64
+		id int
 	}
 
 	var testItem = repo.Item{Id: 1, Date: DATE, Duration: DURATION}
@@ -100,7 +100,7 @@ func TestGetAll(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type args struct {
-		id uint64
+		id int
 	}
 
 	tests := []struct {

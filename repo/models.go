@@ -1,9 +1,9 @@
 package repo
 
 type Item struct {
-	Id       uint64
-	Date     string
-	Duration uint64
+	Id       int    `json:"id,string"`
+	Date     string `json:"date"`
+	Duration int    `json:"duration,string"`
 }
 
 type ReportTotal struct {
@@ -25,10 +25,9 @@ type PageData struct {
 	Report Report
 }
 
-func MsToReportTotal(ms uint64) ReportTotal {
-	secs := ms / 1000.0
+func MsToReportTotal(secs int) ReportTotal {
 	mins := secs / 60.0
 	hours := mins / 60.0
 	days := hours / 24.0
-	return ReportTotal{int(days), int(hours), int(mins), int(secs)}
+	return ReportTotal{days, hours, mins, secs}
 }

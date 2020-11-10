@@ -55,7 +55,7 @@ func (r *MySQLRepo) insert(item Item) (Item, error) {
 		return Item{}, err
 	}
 
-	item.Id = uint64(id)
+	item.Id = int(id)
 	return item, nil
 }
 
@@ -74,7 +74,7 @@ func (r *MySQLRepo) update(item Item) (Item, error) {
 	return item, nil
 }
 
-func (r *MySQLRepo) Delete(id uint64) (bool, error) {
+func (r *MySQLRepo) Delete(id int) (bool, error) {
 	q := "DELETE FROM practice WHERE id=?"
 	stmt, err := r.db.Prepare(q)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r *MySQLRepo) Delete(id uint64) (bool, error) {
 	return count > 0, nil
 }
 
-func (r *MySQLRepo) Get(id uint64) (Item, error) {
+func (r *MySQLRepo) Get(id int) (Item, error) {
 	q := "SELECT id, date, duration FROM practice WHERE id=?"
 	stmt, err := r.db.Prepare(q)
 	if err != nil {

@@ -27,18 +27,22 @@ func main() {
 	router := mux.NewRouter()
 
 	// rest api endpoints
-	router.HandleFunc("/rest", restAll(gPractice)).Methods(http.MethodGet)
-	router.HandleFunc("/rest", restAdd(gPractice)).Methods(http.MethodPost)
-	router.HandleFunc("/rest/{id}", restGet(gPractice)).Methods(http.MethodGet)
-	router.HandleFunc("/rest/{id}", restUpdate(gPractice)).Methods(http.MethodPost, http.MethodPut)
-	router.HandleFunc("/rest/{id}", restDelete(gPractice)).Methods(http.MethodDelete)
+	restHandler := restHandler{gPractice}
+	router.HandleFunc("/rest", restHandler.restAll()).Methods(http.MethodGet)
+	router.HandleFunc("/rest/", restHandler.restAll()).Methods(http.MethodGet)
+	router.HandleFunc("/rest", restHandler.restAdd()).Methods(http.MethodPost)
+	router.HandleFunc("/rest/{id}", restHandler.restGet()).Methods(http.MethodGet)
+	router.HandleFunc("/rest/{id}", restHandler.restUpdate()).Methods(http.MethodPost, http.MethodPut)
+	router.HandleFunc("/rest/{id}", restHandler.restDelete()).Methods(http.MethodDelete)
 
 	// web app endpoints
-	router.HandleFunc("/app", appAll(gPractice, tmplt)).Methods(http.MethodGet)
-	router.HandleFunc("/app", appAdd(gPractice, tmplt)).Methods(http.MethodPost)
-	router.HandleFunc("/app/{id}", appGet(gPractice, tmplt)).Methods(http.MethodGet)
-	router.HandleFunc("/app/{id}", appUpdate(gPractice, tmplt)).Methods(http.MethodPost, http.MethodPut)
-	router.HandleFunc("/app/{id}", appDelete(gPractice, tmplt)).Methods(http.MethodDelete)
+	appHandler := appHandler{gPractice, tmplt}
+	router.HandleFunc("/app", appHandler.appAll()).Methods(http.MethodGet)
+	router.HandleFunc("/app/", appHandler.appAll()).Methods(http.MethodGet)
+	router.HandleFunc("/app", appHandler.appAdd()).Methods(http.MethodPost)
+	router.HandleFunc("/app/{id}", appHandler.appGet()).Methods(http.MethodGet)
+	router.HandleFunc("/app/{id}", appHandler.appUpdate()).Methods(http.MethodPost, http.MethodPut)
+	router.HandleFunc("/app/{id}", appHandler.appDelete()).Methods(http.MethodDelete)
 
 	// run server
 	log.Fatal(http.ListenAndServe(":3000", router))

@@ -10,24 +10,24 @@ const (
 
 type Repository interface {
 	Save(item Item) (Item, error)
-	Delete(id uint64) (bool, error)
-	Get(id uint64) (Item, error)
+	Delete(id int) (bool, error)
+	Get(id int) (Item, error)
 	GetAll() ([]Item, error)
 }
 
 type StubRepo struct {
-	Map map[uint64]Item
+	Map map[int]Item
 }
 
 func (r *StubRepo) Save(item Item) (Item, error) {
 	if item.Id == NewId {
-		item.Id = r.nextId()
+		item.Id = int(r.nextId())
 	}
 	r.Map[item.Id] = item
 	return r.Map[item.Id], nil
 }
 
-func (r *StubRepo) Delete(id uint64) (bool, error) {
+func (r *StubRepo) Delete(id int) (bool, error) {
 	if _, ok := r.Map[id]; ok {
 		delete(r.Map, id)
 		return true, nil
@@ -35,7 +35,7 @@ func (r *StubRepo) Delete(id uint64) (bool, error) {
 	return false, nil
 }
 
-func (r *StubRepo) Get(id uint64) (Item, error) {
+func (r *StubRepo) Get(id int) (Item, error) {
 	if v, ok := r.Map[id]; ok {
 		return v, nil
 	}
@@ -51,14 +51,14 @@ func (r *StubRepo) GetAll() ([]Item, error) {
 	return result, nil
 }
 
-func (r *StubRepo) nextId() uint64 {
+func (r *StubRepo) nextId() int {
 	max := findMaxId(r.Map)
 	max++
 	return max
 }
 
-func findMaxId(items map[uint64]Item) uint64 {
-	max := uint64(1)
+func findMaxId(items map[int]Item) int {
+	max := 1
 	for k := range items {
 		if k > max {
 			max = k

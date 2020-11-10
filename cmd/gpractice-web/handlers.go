@@ -6,15 +6,20 @@ import (
 	"github.com/vk23/gpractice"
 	"github.com/vk23/gpractice/repo"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 )
 
-func restAll(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Request) {
+type restHandler struct {
+	gp gpractice.GPractice
+}
+
+func (h *restHandler) restAll() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getAll(w, gPractice)
+		pageData := getAll(w, h.gp)
 		jsonBytes, err := json.Marshal(pageData)
 		if err != nil {
 			log.Printf("Json error: %v\n", err)
@@ -26,10 +31,67 @@ func restAll(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Requ
 	}
 }
 
-func appAll(gPractice gpractice.GPractice, tmplt *template.Template) func(http.ResponseWriter, *http.Request) {
+func (h *restHandler) restAdd() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getAll(w, gPractice)
-		err := tmplt.Execute(w, pageData)
+		item := parseJson(w, r)
+		item = addItem(w, h.gp, item)
+		jsonBytes, err := json.Marshal(item)
+		if err != nil {
+			log.Printf("Json error: %v\n", err)
+			http.Error(w, "Json error", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonBytes)
+	}
+}
+
+func (h *restHandler) restGet() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		item := getItem(w, h.gp, r)
+		jsonBytes, err := json.Marshal(item)
+		if err != nil {
+			log.Printf("Json error: %v\n", err)
+			http.Error(w, "Json error", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonBytes)
+	}
+}
+
+func (h *restHandler) restUpdate() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		item := parseJson(w, r)
+		item = addItem(w, h.gp, item)
+		jsonBytes, err := json.Marshal(item)
+		if err != nil {
+			log.Printf("Json error: %v\n", err)
+			http.Error(w, "Json error", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonBytes)
+	}
+}
+
+func (h *restHandler) restDelete() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		deleteItem(w, h.gp, r)
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte("{}"))
+	}
+}
+
+type appHandler struct {
+	gp    gpractice.GPractice
+	tmplt *template.Template
+}
+
+func (h *appHandler) appAll() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pageData := getAll(w, h.gp)
+		err := h.tmplt.Execute(w, pageData)
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
 			http.Error(w, "Template error", http.StatusInternalServerError)
@@ -37,6 +99,57 @@ func appAll(gPractice gpractice.GPractice, tmplt *template.Template) func(http.R
 		}
 	}
 }
+
+func (h *appHandler) appAdd() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		item := parseForm(w, r)
+		item = addItem(w, h.gp, item)
+		pageData := getAll(w, h.gp)
+		err := h.tmplt.Execute(w, pageData)
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (h *appHandler) appGet() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pageData := repo.PageData{}
+		item := getItem(w, h.gp, r)
+		pageData.Item = item
+		err := h.tmplt.Execute(w, pageData)
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (h *appHandler) appUpdate() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		item := parseForm(w, r)
+		item = addItem(w, h.gp, item)
+		pageData := getAll(w, h.gp)
+		err := h.tmplt.Execute(w, pageData)
+		if err != nil {
+			log.Printf("Template error: %v\n", err)
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (h *appHandler) appDelete() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		deleteItem(w, h.gp, r)
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// ---- helper functions ----//
 
 func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData {
 	pageData := repo.PageData{}
@@ -60,44 +173,42 @@ func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData 
 	return pageData
 }
 
-func restAdd(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := addItem(w, gPractice, r)
-		jsonBytes, err := json.Marshal(pageData)
-		if err != nil {
-			log.Printf("Json error: %v\n", err)
-			http.Error(w, "Json error", http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(jsonBytes)
+func parseJson(w http.ResponseWriter, r *http.Request) repo.Item {
+	item := repo.Item{}
+
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Json error: %v\n", err)
+		http.Error(w, "Json error", http.StatusBadRequest)
+		return item
 	}
+	err = json.Unmarshal(bytes, &item)
+	if err != nil {
+		log.Printf("Json error: %v\n", err)
+		http.Error(w, "Json error", http.StatusBadRequest)
+		return item
+	}
+
+	var validDate = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	if !validDate.MatchString(item.Date) {
+		log.Printf("Error parsing form date: %v\n", item.Date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return item
+	}
+	return item
 }
 
-func appAdd(gPractice gpractice.GPractice, tmplt *template.Template) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := addItem(w, gPractice, r)
-		err := tmplt.Execute(w, pageData)
-		if err != nil {
-			log.Printf("Template error: %v\n", err)
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) repo.PageData {
-	pageData := repo.PageData{}
+func parseForm(w http.ResponseWriter, r *http.Request) repo.Item {
 	var err error
+	var item repo.Item
 
-	// validate form
 	err = r.ParseForm()
-	log.Printf("addItem: form=%v\n", r.Form)
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return pageData
+		return item
 	}
+
 	idInput := r.Form.Get("idInput")
 	id := 0
 	if idInput != "" {
@@ -105,7 +216,7 @@ func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Reque
 		if err != nil {
 			log.Printf("Error parsing form: %v\n", err)
 			http.Error(w, "invalid form", http.StatusBadRequest)
-			return pageData
+			return item
 		}
 	}
 	date := r.Form.Get("dateInput")
@@ -113,55 +224,33 @@ func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Reque
 	if !validDate.MatchString(date) {
 		log.Printf("Error parsing form date: %v\n", date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
-		return pageData
+		return item
 	}
 	duration, err := strconv.Atoi(r.Form.Get("durationInput"))
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return pageData
+		return item
 	}
 
+	return repo.Item{int(id), date, int(duration)}
+}
+
+func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, item repo.Item) repo.Item {
 	// save item
-	item, err := gPractice.Save(repo.Item{Id: uint64(id), Date: date, Duration: uint64(duration)})
+	item, err := gPractice.Save(item)
 	if err != nil {
 		log.Printf("Error saving item: %v\n", err)
 		http.Error(w, "Failed to save item", http.StatusInternalServerError)
-		return pageData
+		return item
 	}
 	log.Printf("Item saved: %v\n", item)
 
-	return getAll(w, gPractice)
+	return item
 }
 
-func restGet(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getItem(w, gPractice, r)
-		jsonBytes, err := json.Marshal(pageData)
-		if err != nil {
-			log.Printf("Json error: %v\n", err)
-			http.Error(w, "Json error", http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(jsonBytes)
-	}
-}
-
-func appGet(gPractice gpractice.GPractice, tmplt *template.Template) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getItem(w, gPractice, r)
-		err := tmplt.Execute(w, pageData)
-		if err != nil {
-			log.Printf("Template error: %v\n", err)
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) repo.PageData {
-	pageData := repo.PageData{}
+func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) repo.Item {
+	item := repo.Item{}
 	vars := mux.Vars(r)
 	var err error
 
@@ -171,58 +260,18 @@ func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Reque
 	if err != nil {
 		log.Printf("Bad id error: %v\n", err)
 		http.Error(w, "Bad id", http.StatusBadRequest)
-		return pageData
+		return item
 	}
-	pageData.Item, err = gPractice.Get(uint64(id))
+	item, err = gPractice.Get(id)
 	if err != nil {
 		log.Printf("Failed to retrieve item by id %d, error: %v\n", id, err)
 		http.Error(w, "Failed to retrieve item by id", http.StatusInternalServerError)
-		return pageData
+		return item
 	}
 
-	return pageData
+	return item
 }
 
-func restUpdate(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := addItem(w, gPractice, r)
-		jsonBytes, err := json.Marshal(pageData)
-		if err != nil {
-			log.Printf("Json error: %v\n", err)
-			http.Error(w, "Json error", http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(jsonBytes)
-	}
-}
-
-func appUpdate(gPractice gpractice.GPractice, tmplt *template.Template) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := addItem(w, gPractice, r)
-		err := tmplt.Execute(w, pageData)
-		if err != nil {
-			log.Printf("Template error: %v\n", err)
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func restDelete(gPractice gpractice.GPractice) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		deleteItem(w, gPractice, r)
-		w.WriteHeader(http.StatusNoContent)
-		w.Write([]byte("{}"))
-	}
-}
-
-func appDelete(gPractice gpractice.GPractice, tmplt *template.Template) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		deleteItem(w, gPractice, r)
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
 func deleteItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) {
 	vars := mux.Vars(r)
 	var err error
@@ -236,7 +285,7 @@ func deleteItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Re
 		return
 	}
 	var result = false
-	result, err = gPractice.Delete(uint64(id))
+	result, err = gPractice.Delete(id)
 	if err != nil {
 		log.Printf("Error deleting item: %v\n", err)
 		http.Error(w, "Failed to delete item", http.StatusInternalServerError)
