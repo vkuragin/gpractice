@@ -1,5 +1,10 @@
 package main
 
+import (
+	"html/template"
+	"log"
+)
+
 var defaultHtmlTemplate = `
 <html>
     <head>
@@ -101,3 +106,21 @@ var defaultHtmlTemplate = `
     </body>
 </html>
 `
+
+func getTemplate(templatePath string) *template.Template {
+	var result *template.Template
+	var err error
+
+	if templatePath != "" {
+		result, err = template.ParseFiles(templatePath)
+	} else {
+		tpl := template.New("defaultHtmlTemplate")
+		result, err = tpl.Parse(defaultHtmlTemplate)
+	}
+
+	if err != nil {
+		log.Fatalf("Error template: %v\n", err)
+	}
+
+	return result
+}
