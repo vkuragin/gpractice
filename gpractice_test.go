@@ -9,7 +9,7 @@ import (
 const (
 	DATE     = "2020-10-31"
 	DATE2    = "1999-01-01"
-	DURATION = 15000
+	DURATION = 15
 )
 
 var gPractice GPractice

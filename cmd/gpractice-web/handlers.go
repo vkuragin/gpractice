@@ -33,7 +33,10 @@ func (h *restHandler) restAll() func(http.ResponseWriter, *http.Request) {
 
 func (h *restHandler) restAdd() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		item := parseJson(w, r)
+		item, ok := parseJson(w, r)
+		if !ok {
+			return
+		}
 		item = addItem(w, h.gp, item)
 		jsonBytes, err := json.Marshal(item)
 		if err != nil {
@@ -62,7 +65,10 @@ func (h *restHandler) restGet() func(http.ResponseWriter, *http.Request) {
 
 func (h *restHandler) restUpdate() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		item := parseJson(w, r)
+		item, ok := parseJson(w, r)
+		if !ok {
+			return
+		}
 		item = addItem(w, h.gp, item)
 		jsonBytes, err := json.Marshal(item)
 		if err != nil {
@@ -102,7 +108,10 @@ func (h *appHandler) appAll() func(http.ResponseWriter, *http.Request) {
 
 func (h *appHandler) appAdd() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		item := parseForm(w, r)
+		item, ok := parseForm(w, r)
+		if !ok {
+			return
+		}
 		item = addItem(w, h.gp, item)
 		pageData := getAll(w, h.gp)
 		err := h.tmplt.Execute(w, pageData)
@@ -130,7 +139,10 @@ func (h *appHandler) appGet() func(http.ResponseWriter, *http.Request) {
 
 func (h *appHandler) appUpdate() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		item := parseForm(w, r)
+		item, ok := parseForm(w, r)
+		if !ok {
+			return
+		}
 		item = addItem(w, h.gp, item)
 		pageData := getAll(w, h.gp)
 		err := h.tmplt.Execute(w, pageData)
@@ -173,32 +185,32 @@ func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData 
 	return pageData
 }
 
-func parseJson(w http.ResponseWriter, r *http.Request) repo.Item {
+func parseJson(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
 	item := repo.Item{}
 
 	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Json error: %v\n", err)
-		http.Error(w, "Json error", http.StatusBadRequest)
-		return item
+		http.Error(w, "Json error", http.StatusInternalServerError)
+		return item, false
 	}
 	err = json.Unmarshal(bytes, &item)
 	if err != nil {
 		log.Printf("Json error: %v\n", err)
 		http.Error(w, "Json error", http.StatusBadRequest)
-		return item
+		return item, false
 	}
 
 	var validDate = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	if !validDate.MatchString(item.Date) {
 		log.Printf("Error parsing form date: %v\n", item.Date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
-		return item
+		return item, false
 	}
-	return item
+	return item, true
 }
 
-func parseForm(w http.ResponseWriter, r *http.Request) repo.Item {
+func parseForm(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
 	var err error
 	var item repo.Item
 
@@ -206,7 +218,7 @@ func parseForm(w http.ResponseWriter, r *http.Request) repo.Item {
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return item
+		return item, false
 	}
 
 	idInput := r.Form.Get("idInput")
@@ -216,7 +228,7 @@ func parseForm(w http.ResponseWriter, r *http.Request) repo.Item {
 		if err != nil {
 			log.Printf("Error parsing form: %v\n", err)
 			http.Error(w, "invalid form", http.StatusBadRequest)
-			return item
+			return item, false
 		}
 	}
 	date := r.Form.Get("dateInput")
@@ -224,16 +236,16 @@ func parseForm(w http.ResponseWriter, r *http.Request) repo.Item {
 	if !validDate.MatchString(date) {
 		log.Printf("Error parsing form date: %v\n", date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
-		return item
+		return item, false
 	}
 	duration, err := strconv.Atoi(r.Form.Get("durationInput"))
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return item
+		return item, false
 	}
 
-	return repo.Item{int(id), date, int(duration)}
+	return repo.Item{int(id), date, int(duration)}, true
 }
 
 func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, item repo.Item) repo.Item {

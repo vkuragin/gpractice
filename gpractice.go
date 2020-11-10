@@ -65,7 +65,7 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 		total += v.Duration
 	}
 
-	report := repo.Report{Days: days, Since: earliest.Format("2006-01-02"), Total: repo.MsToReportTotal(total)}
+	report := repo.Report{Days: days, Since: earliest.Format("2006-01-02"), Total: repo.SecondsToReportTotal(total)}
 	log.Printf("Getting report result: %v\n", report)
 	return report, nil
 }

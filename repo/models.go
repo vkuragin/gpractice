@@ -25,9 +25,22 @@ type PageData struct {
 	Report Report
 }
 
-func MsToReportTotal(secs int) ReportTotal {
-	mins := secs / 60.0
-	hours := mins / 60.0
-	days := hours / 24.0
+func SecondsToReportTotal(secs int) ReportTotal {
+	x, mins, hours, days := secs, 0, 0, 0
+
+	x /= 60.0
+	if x > 0 {
+		mins = x % 60.0
+	}
+
+	x /= 60.0
+	if x > 0 {
+		hours = x % (60.0 * 60.0)
+	}
+
+	x /= 24.0
+	if x > 0 {
+		days = x % (60.0 * 60.0 * 24.0)
+	}
 	return ReportTotal{days, hours, mins, secs}
 }

@@ -56,7 +56,7 @@ var defaultHtmlTemplate = `
             </div>
             <div class="trow">
                 <label for="durationInput">Duration</label>
-                <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}s>
+                <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}>
             </div>
             <input type="submit" id="saveButton" value="save">
         </form>
@@ -93,7 +93,7 @@ var defaultHtmlTemplate = `
                 <tr>
                     <td>{{ .Id }}</td>
                     <td>{{ .Date }}</td>
-                    <td>{{ .Duration }}</td>
+                    <td>{{ .Duration }}s</td>
                     <td><a href="/app/{{ .Id }}">Edit</a></td>
                     <td><input type="button" value="Del" onclick="deleteFunc({{ .Id }});"></td>
                 </tr>
