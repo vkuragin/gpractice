@@ -14,3 +14,4 @@
 4. unit tests
 5. external configs
 6. create custom practices with api and storage (now only 1 hardcoded)
+7. run web app as a service
