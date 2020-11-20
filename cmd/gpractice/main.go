@@ -18,19 +18,22 @@ const (
 	GET           = "get"
 	DEL           = "del"
 	REPORT        = "report"
+	IMPORT        = "import"
+	EXPORT        = "export"
 )
 
 func main() {
-	actionFlag := flag.String("action", string(ALL), "one of possible actions: all, add, del, get, report")
+	actionFlag := flag.String("action", string(ALL), "one of possible actions: all, add, del, get, report, import, export")
 	dateFlag := flag.String("date", time.Now().Format("2006-01-02"), "practice date yyyy-MM-dd")
 	minutesFlag := flag.Int("minutes", 0, "practice time in minutes")
 	idFlag := flag.Int("id", 0, "id")
+	fileFlag := flag.String("f", "data.csv", "file")
 	flag.Parse()
 
-	execute(*actionFlag, *idFlag, *dateFlag, *minutesFlag)
+	execute(*actionFlag, *idFlag, *dateFlag, *minutesFlag, *fileFlag)
 }
 
-func execute(action string, id int, date string, minutes int) {
+func execute(action string, id int, date string, minutes int, file string) {
 	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
 	gp := initGPractice()
 
@@ -51,6 +54,12 @@ func execute(action string, id int, date string, minutes int) {
 	case REPORT:
 		report, err := gp.GetReport()
 		log.Printf("result: %v\n, error: %v\n", report, err)
+	case IMPORT:
+		err := gp.Import(file)
+		log.Printf("result: done\n, error: %v\n", err)
+	case EXPORT:
+		err := gp.Export(file)
+		log.Printf("result: done\n, error: %v\n", err)
 	default:
 		log.Fatalf("Unknown action: %v\n", action)
 		os.Exit(1)

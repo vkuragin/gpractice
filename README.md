@@ -8,10 +8,10 @@
 
 
 ###TODO
-1. import/export csv files
-2. html/css styling
-3. mongodb support
-4. unit tests
-5. external configs
-6. create custom practices with api and storage (now only 1 hardcoded)
-7. run web app as a service
+- [x] import/export csv files
+- [ ] html/css styling
+- [ ] mongodb support
+- [ ] unit tests
+- [ ] external configs
+- [ ] create custom practices with api and storage (now only 1 hardcoded)
+- [ ] run web app as a service
