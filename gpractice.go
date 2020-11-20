@@ -177,12 +177,10 @@ func fromCsvRecord(r []string) (repo.Item, error) {
 		return repo.Item{}, fmt.Errorf("expected 3 fields, got: %d", len(r))
 	}
 
-	id, err := strconv.Atoi(r[0])
-	if err != nil {
-		// OK, new record
-		id = 0
-	}
+	// OK, new record
+	id := 0
 
+	// validate date
 	date := r[1]
 	var validDate = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	if !validDate.MatchString(date) {
