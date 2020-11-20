@@ -35,6 +35,7 @@ func (gp *GPractice) Get(id int) (repo.Item, error) {
 func (gp *GPractice) GetAll() ([]repo.Item, error) {
 	log.Printf("Getting all items\n")
 	items, err := gp.Repo.GetAll()
+	sortByDate(items, true)
 	log.Printf("Getting all items result: %v\n", items)
 	return items, err
 }
@@ -51,7 +52,7 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 		return repo.Report{}, err
 	}
 
-	sortByDate(items)
+	sortByDate(items, false)
 
 	earliest, days, total := time.Now(), 0, 0
 	prev := time.Now()
@@ -71,7 +72,11 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 		total += v.Duration
 	}
 
-	report := repo.Report{Days: days, Since: earliest.Format("2006-01-02"), Total: repo.SecondsToReportTotal(total)}
+	report := repo.Report{
+		Days:  days,
+		Since: earliest.Format("2006-01-02"),
+		Total: time.Duration(total * 1e9).String(),
+	}
 	log.Printf("Getting report result: %v\n", report)
 	return report, nil
 }
@@ -145,7 +150,7 @@ func closeFile(file *os.File) {
 	}
 }
 
-func sortByDate(items []repo.Item) {
+func sortByDate(items []repo.Item, reverse bool) {
 	sort.Slice(items, func(i, j int) bool {
 		one, two := items[i], items[j]
 		d1, e := time.Parse("2006-01-02", one.Date)
@@ -155,6 +160,9 @@ func sortByDate(items []repo.Item) {
 		d2, e := time.Parse("2006-01-02", two.Date)
 		if e != nil {
 			log.Printf("Failed to parse date: %v\n", two.Date)
+		}
+		if reverse {
+			return d2.Before(d1)
 		}
 		return d1.Before(d2)
 	})

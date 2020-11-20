@@ -1,7 +1,7 @@
 package gpractice
 
 import (
-	"github.com/vk23/gpractice/repo"
+	"github.com/vkuragin/gpractice/repo"
 	"reflect"
 	"testing"
 )
@@ -126,7 +126,7 @@ func TestGetReport(t *testing.T) {
 		name string
 		want repo.Report
 	}{
-		{"report", repo.Report{Days: 1, Since: DATE, Total: repo.ReportTotal{Days: 0, Hours: 0, Minutes: 0, Seconds: 15}}},
+		{"report", repo.Report{Days: 1, Since: DATE, Total: "15s"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

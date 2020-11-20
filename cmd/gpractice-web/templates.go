@@ -71,7 +71,7 @@ var defaultHtmlTemplate = `
             <div class="row">
                 <p class="col">{{ .Report.Days }}</p>
                 <p class="col">{{ .Report.Since }}</p>
-                <p class="col">{{ .Report.Total.Days }}d {{ .Report.Total.Hours }}h {{ .Report.Total.Minutes }}m {{ .Report.Total.Seconds }}s</p>
+                <p class="col">{{ .Report.Total }}</p>
             </div>
         </div>
         {{ end }}
