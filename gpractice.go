@@ -1,10 +1,14 @@
 package gpractice
 
 import (
+	"encoding/csv"
 	"fmt"
 	"github.com/vkuragin/gpractice/repo"
 	"log"
+	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -72,6 +76,75 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 	return report, nil
 }
 
+func (gp *GPractice) Import(filePath string) error {
+	// open file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer closeFile(file)
+
+	// read all records from file
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	// save all records (assuming that the first row is a header)
+	for i := 1; i < len(records); i++ {
+		rec := records[i]
+		item, err := fromCsvRecord(rec)
+		if err != nil {
+			log.Printf("Failed to process record: %v. Error: %v\n", rec, err)
+			continue
+		}
+		_, err = gp.Repo.Save(item)
+		if err != nil {
+			log.Printf("Failed to save record: %v. Error: %v\n", item, err)
+			continue
+		}
+	}
+	log.Printf("records: %v\n", records)
+
+	return nil
+}
+
+func (gp *GPractice) Export(filePath string) error {
+	// open or create file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer closeFile(file)
+
+	// get all records
+	items, err := gp.Repo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	// convert and write to file
+	records := make([][]string, len(items)+1)
+	records[0] = []string{"id", "date", "duration(seconds)"}
+	for i, v := range items {
+		records[i+1] = toCsvRecord(v)
+	}
+	w := csv.NewWriter(file)
+	err = w.WriteAll(records)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func closeFile(file *os.File) {
+	if err := file.Close(); err != nil {
+		log.Printf("Failed to close file: %v. Error: %v\n", file, err)
+	}
+}
+
 func sortByDate(items []repo.Item) {
 	sort.Slice(items, func(i, j int) bool {
 		one, two := items[i], items[j]
@@ -85,4 +158,33 @@ func sortByDate(items []repo.Item) {
 		}
 		return d1.Before(d2)
 	})
+}
+
+func toCsvRecord(i repo.Item) []string {
+	return []string{fmt.Sprintf("%d", i.Id), i.Date, fmt.Sprintf("%d", i.Duration)}
+}
+
+func fromCsvRecord(r []string) (repo.Item, error) {
+	if len(r) != 3 {
+		return repo.Item{}, fmt.Errorf("expected 3 fields, got: %d", len(r))
+	}
+
+	id, err := strconv.Atoi(r[0])
+	if err != nil {
+		// OK, new record
+		id = 0
+	}
+
+	date := r[1]
+	var validDate = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	if !validDate.MatchString(date) {
+		return repo.Item{}, fmt.Errorf("invalid date %s", date)
+	}
+
+	duration, err := strconv.Atoi(r[2])
+	if err != nil {
+		return repo.Item{}, fmt.Errorf("invalid duration %s", r[2])
+	}
+
+	return repo.Item{id, date, duration}, nil
 }
