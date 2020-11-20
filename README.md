@@ -14,4 +14,3 @@
 - [ ] unit tests
 - [ ] external configs
 - [ ] create custom practices with api and storage (now only 1 hardcoded)
-- [ ] run web app as a service

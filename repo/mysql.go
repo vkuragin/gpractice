@@ -138,6 +138,6 @@ func (r *MySQLRepo) GetAll() ([]Item, error) {
 		items = append(items, i)
 	}
 
-	log.Printf("Items=%+v, succesfully processed %v out of %v", items, len(items), count)
+	log.Printf("GetAll: succesfully processed %v out of %v", len(items), count)
 	return items, nil
 }

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 type restHandler struct {
@@ -190,7 +191,8 @@ func (h *appHandler) appDelete() func(http.ResponseWriter, *http.Request) {
 // ---- helper functions ----//
 
 func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData {
-	pageData := repo.PageData{}
+	item := repo.Item{Date: time.Now().Format("2006-01-02")}
+	pageData := repo.PageData{Item: item}
 	var err error
 
 	log.Printf("getAll\n")

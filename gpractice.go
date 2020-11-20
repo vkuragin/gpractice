@@ -36,7 +36,7 @@ func (gp *GPractice) GetAll() ([]repo.Item, error) {
 	log.Printf("Getting all items\n")
 	items, err := gp.Repo.GetAll()
 	sortByDate(items, true)
-	log.Printf("Getting all items result: %v\n", items)
+	//log.Printf("Getting all items result: %v\n", items)
 	return items, err
 }
 
@@ -77,7 +77,7 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 		Since: earliest.Format("2006-01-02"),
 		Total: time.Duration(total * 1e9).String(),
 	}
-	log.Printf("Getting report result: %v\n", report)
+	//log.Printf("Getting report result: %v\n", report)
 	return report, nil
 }
 
