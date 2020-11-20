@@ -9,6 +9,41 @@ var defaultHtmlTemplate = `
     <head>
         <title>GPractice</title>
         <style>
+            h1,h2,h3 {
+              text-align: center;
+            }
+            body {
+              background-color: #ccc;
+            }
+            .root {
+              width: 800px;
+              display: block;
+              margin: auto;
+              background-color: #eee;
+            }
+            .content {
+              display: block;
+              margin: auto;
+            }
+            table, tbody, thead, form,.report {
+              margin: auto;
+              width: 600px;
+              /* border: 1px solid #ccc; */
+            }
+            .fdiv {
+              display: flex;
+              padding: 3px;
+            }
+            input {
+              text-align: right;
+            }
+            input:read-only {
+              background-color: #ccc;
+              border: 1px solid #999;
+            }
+            label {
+              width: 20%;
+            }
             tr, .row {
                 width: 100%;
                 margin: auto;
@@ -16,7 +51,14 @@ var defaultHtmlTemplate = `
                 padding: 1px;
             }
             td, th, .col {
-                padding: 5px;
+                margin: auto;
+                border: 1px solid #555;
+                width: 100%;
+                text-align: center;
+            }
+            .tbtn, .tid {
+              margin: auto;
+              width: 20%;
             }
         </style>
         <script type="application/javascript">
@@ -35,66 +77,73 @@ var defaultHtmlTemplate = `
     </head>
 
     <body>
-        <a href="/app">home</a>
-
+      <div class="root">
         <h1>Default template</h1>
 
-        <form action="/app" method="post">
-            {{ if and .Item .Item.Id }}
-            <p>Update item: </p>
-            <div class="trow">
-                <label for="idInput">ID</label>
-                <input type="text" id="idInput" name="idInput" value={{ .Item.Id }} readonly>
-            </div>
-            {{ else }}
-            <p>Add item: </p>
-            {{ end }}
-            <div class="trow">
-                <label for="dateInput">Date</label>
-                <input type="date" id="dateInput" name="dateInput" value={{ .Item.Date }}>
-            </div>
-            <div class="trow">
-                <label for="durationInput">Duration</label>
-                <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}>
-            </div>
-            <input type="submit" id="saveButton" value="save">
-        </form>
+        <a href="/app" style="padding: 10px;">home</a>
+
+        <div class="content">
+          <form action="/app" method="post">
+              {{ if and .Item .Item.Id }}
+              <p>Update item: </p>
+              <div class="fdiv">
+                  <label for="idInput">ID</label>
+                  <input type="text" id="idInput" name="idInput" value={{ .Item.Id }} readonly>
+              </div>
+              {{ else }}
+              <p>Add item: </p>
+              {{ end }}
+              <div class="fdiv">
+                  <label for="dateInput">Date</label>
+                  <input type="date" id="dateInput" name="dateInput" value={{ .Item.Date }}>
+              </div>
+              <div class="fdiv">
+                  <label for="durationInput">Duration</label>
+                  <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}>
+              </div>
+              <input type="submit" id="saveButton" value="save">
+          </form>
+        </div>
 
         {{ if and .Report .Report.Days }}
-        <div>
+        <div class="content">
             <h3>Report</h3>
-            <div class="row">
-                <h4 class="col">days</h4>
-                <h4 class="col">since</h4>
-                <h4 class="col">total</h4>
-            </div>
-            <div class="row">
-                <p class="col">{{ .Report.Days }}</p>
-                <p class="col">{{ .Report.Since }}</p>
-                <p class="col">{{ .Report.Total }}</p>
+            <div class="report">
+              <div class="row">
+                  <h4 class="col">days</h4>
+                  <h4 class="col">since</h4>
+                  <h4 class="col">total</h4>
+              </div>
+              <div class="row">
+                  <p class="col">{{ .Report.Days }}</p>
+                  <p class="col">{{ .Report.Since }}</p>
+                  <p class="col">{{ .Report.Total }}</p>
+              </div>
             </div>
         </div>
         {{ end }}
 
         {{ if .Items }}
-        <div>
+        <div class="content">
             <h3>History</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>id</th>
+                        <th class="tid">id</th>
                         <th>date</th>
                         <th>duration</th>
+                        <th class="tbtn">edit</th>
+                        <th class="tbtn">delete</th>
                     </tr>
                 </thead>
                 <tbody>
                 {{ range .Items }}
                 <tr>
-                    <td>{{ .Id }}</td>
+                    <td class="tid">{{ .Id }}</td>
                     <td>{{ .Date }}</td>
                     <td>{{ .Duration }}s</td>
-                    <td><a href="/app/{{ .Id }}">Edit</a></td>
-                    <td><input type="button" value="Del" onclick="deleteFunc({{ .Id }});"></td>
+                    <td class="tbtn"><a href="/app/{{ .Id }}">Edit</a></td>
+                    <td class="tbtn"><input type="button" value="Del" onclick="deleteFunc({{ .Id }});"></td>
                 </tr>
                 {{ end }}
                 </tbody>
@@ -102,8 +151,10 @@ var defaultHtmlTemplate = `
         </div>
         {{ end }}
 
+      </div>
     </body>
 </html>
+
 `
 
 type tplHolder struct {

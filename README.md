@@ -9,7 +9,7 @@
 
 ###TODO
 - [x] import/export csv files
-- [ ] html/css styling
+- [x] html/css styling
 - [ ] mongodb support
 - [ ] unit tests
 - [ ] external configs
