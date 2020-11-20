@@ -2,9 +2,9 @@
 
 ###Installation
 1. `go install -v ...`
-2. `gpractice` - to run shell util,
-    or `gpractice-web` to run server app.
-    To see available arguments, run with flag `-help`
+2. - `gpractice` - to run shell util
+   - `gpractice-web` to run server app.
+   - to see available arguments, run with flag `-help`
 
 
 ###TODO
