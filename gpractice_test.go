@@ -126,7 +126,7 @@ func TestGetReport(t *testing.T) {
 		name string
 		want repo.Report
 	}{
-		{"report", repo.Report{Days: 1, Since: DATE, Total: "15s"}},
+		{"report", repo.Report{Days: 1, Since: DATE, Total: 15}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

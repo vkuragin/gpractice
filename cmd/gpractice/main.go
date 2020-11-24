@@ -24,7 +24,7 @@ const (
 
 func main() {
 	actionFlag := flag.String("action", string(ALL), "one of possible actions: all, add, del, get, report, import, export")
-	dateFlag := flag.String("date", time.Now().Format("2006-01-02"), "practice date yyyy-MM-dd")
+	dateFlag := flag.String("date", time.Now().Format(repo.DateFormat), "practice date yyyy-MM-dd")
 	minutesFlag := flag.Int("minutes", 0, "practice time in minutes")
 	idFlag := flag.Int("id", 0, "id")
 	fileFlag := flag.String("f", "data.csv", "file")

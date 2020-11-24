@@ -191,30 +191,37 @@ func (h *appHandler) appDelete() func(http.ResponseWriter, *http.Request) {
 // ---- helper functions ----//
 
 func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData {
-	item := repo.Item{Date: time.Now().Format("2006-01-02")}
+	item := repo.ItemDto{Date: time.Now().Format(repo.DateFormat)}
 	pageData := repo.PageData{Item: item}
 	var err error
 
 	log.Printf("getAll\n")
 
-	pageData.Items, err = gPractice.GetAll()
+	items, err := gPractice.GetAll()
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 		http.Error(w, "Error", http.StatusInternalServerError)
 		return pageData
 	}
 
-	pageData.Report, err = gPractice.GetReport()
+	report, err := gPractice.GetReport()
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 		http.Error(w, "Error", http.StatusInternalServerError)
 		return pageData
 	}
+
+	dtos := make([]repo.ItemDto, len(items))
+	for i, item := range items {
+		dtos[i] = repo.ItemToDto(item)
+	}
+	pageData.Items = dtos
+	pageData.Report = repo.ReportToDto(report)
 	return pageData
 }
 
-func parseJson(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
-	item := repo.Item{}
+func parseJson(w http.ResponseWriter, r *http.Request) (repo.ItemDto, bool) {
+	item := repo.ItemDto{}
 
 	bytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -238,15 +245,15 @@ func parseJson(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
 	return item, true
 }
 
-func parseForm(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
+func parseForm(w http.ResponseWriter, r *http.Request) (repo.ItemDto, bool) {
 	var err error
-	var item repo.Item
+	var dto repo.ItemDto
 
 	err = r.ParseForm()
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return item, false
+		return dto, false
 	}
 
 	idInput := r.Form.Get("idInput")
@@ -256,7 +263,7 @@ func parseForm(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
 		if err != nil {
 			log.Printf("Error parsing form: %v\n", err)
 			http.Error(w, "invalid form", http.StatusBadRequest)
-			return item, false
+			return dto, false
 		}
 	}
 	date := r.Form.Get("dateInput")
@@ -264,33 +271,39 @@ func parseForm(w http.ResponseWriter, r *http.Request) (repo.Item, bool) {
 	if !validDate.MatchString(date) {
 		log.Printf("Error parsing form date: %v\n", date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
-		return item, false
+		return dto, false
 	}
-	duration, err := strconv.Atoi(r.Form.Get("durationInput"))
+	duration, err := time.ParseDuration(r.Form.Get("durationInput"))
 	if err != nil {
 		log.Printf("Error parsing form: %v\n", err)
 		http.Error(w, "invalid form", http.StatusBadRequest)
-		return item, false
+		return dto, false
 	}
 
-	return repo.Item{int(id), date, int(duration)}, true
+	return repo.ItemDto{
+		int(id),
+		date,
+		int(duration.Seconds()),
+		r.Form.Get("durationInput"),
+	}, true
 }
 
-func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, item repo.Item) repo.Item {
+func addItem(w http.ResponseWriter, gPractice gpractice.GPractice, dto repo.ItemDto) repo.ItemDto {
 	// save item
+	item := repo.DtoToItem(dto)
 	item, err := gPractice.Save(item)
 	if err != nil {
 		log.Printf("Error saving item: %v\n", err)
 		http.Error(w, "Failed to save item", http.StatusInternalServerError)
-		return item
+		return repo.ItemDto{}
 	}
 	log.Printf("Item saved: %v\n", item)
 
-	return item
+	return repo.ItemToDto(item)
 }
 
-func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) repo.Item {
-	item := repo.Item{}
+func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) repo.ItemDto {
+	dto := repo.ItemDto{}
 	vars := mux.Vars(r)
 	var err error
 
@@ -300,16 +313,16 @@ func getItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Reque
 	if err != nil {
 		log.Printf("Bad id error: %v\n", err)
 		http.Error(w, "Bad id", http.StatusBadRequest)
-		return item
+		return dto
 	}
-	item, err = gPractice.Get(id)
+	item, err := gPractice.Get(id)
 	if err != nil {
 		log.Printf("Failed to retrieve item by id %d, error: %v\n", id, err)
 		http.Error(w, "Failed to retrieve item by id", http.StatusInternalServerError)
-		return item
+		return dto
 	}
 
-	return item
+	return repo.ItemToDto(item)
 }
 
 func deleteItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Request) {

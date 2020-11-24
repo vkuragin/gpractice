@@ -99,7 +99,7 @@ var defaultHtmlTemplate = `
               </div>
               <div class="fdiv">
                   <label for="durationInput">Duration</label>
-                  <input type="text" id="durationInput"  name="durationInput"  value={{ .Item.Duration }}>
+                  <input type="text" id="durationInput"  name="durationInput" placeholder="01h23m45s" value={{ .Item.DurationStr }}>
               </div>
               <input type="submit" id="saveButton" value="save">
           </form>
@@ -117,7 +117,7 @@ var defaultHtmlTemplate = `
               <div class="row">
                   <p class="col">{{ .Report.Days }}</p>
                   <p class="col">{{ .Report.Since }}</p>
-                  <p class="col">{{ .Report.Total }}</p>
+                  <p class="col">{{ .Report.TotalStr }}</p>
               </div>
             </div>
         </div>
@@ -141,7 +141,7 @@ var defaultHtmlTemplate = `
                 <tr>
                     <td class="tid">{{ .Id }}</td>
                     <td>{{ .Date }}</td>
-                    <td>{{ .Duration }}s</td>
+                    <td>{{ .DurationStr }}</td>
                     <td class="tbtn"><a href="/app/{{ .Id }}">Edit</a></td>
                     <td class="tbtn"><input type="button" value="Del" onclick="deleteFunc({{ .Id }});"></td>
                 </tr>
@@ -154,7 +154,6 @@ var defaultHtmlTemplate = `
       </div>
     </body>
 </html>
-
 `
 
 type tplHolder struct {

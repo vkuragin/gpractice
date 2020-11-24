@@ -57,7 +57,7 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 	earliest, days, total := time.Now(), 0, 0
 	prev := time.Now()
 	for _, v := range items {
-		d, e := time.Parse("2006-01-02", v.Date)
+		d, e := time.Parse(repo.DateFormat, v.Date)
 		if e != nil {
 			log.Printf("Failed to parse date: %v\n", v.Date)
 			continue
@@ -74,8 +74,8 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 
 	report := repo.Report{
 		Days:  days,
-		Since: earliest.Format("2006-01-02"),
-		Total: time.Duration(total * 1e9).String(),
+		Since: earliest.Format(repo.DateFormat),
+		Total: total,
 	}
 	//log.Printf("Getting report result: %v\n", report)
 	return report, nil
@@ -153,11 +153,11 @@ func closeFile(file *os.File) {
 func sortByDate(items []repo.Item, reverse bool) {
 	sort.Slice(items, func(i, j int) bool {
 		one, two := items[i], items[j]
-		d1, e := time.Parse("2006-01-02", one.Date)
+		d1, e := time.Parse(repo.DateFormat, one.Date)
 		if e != nil {
 			log.Printf("Failed to parse date: %v\n", one.Date)
 		}
-		d2, e := time.Parse("2006-01-02", two.Date)
+		d2, e := time.Parse(repo.DateFormat, two.Date)
 		if e != nil {
 			log.Printf("Failed to parse date: %v\n", two.Date)
 		}

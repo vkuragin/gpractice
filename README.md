@@ -13,4 +13,4 @@
 - [ ] mongodb support
 - [ ] unit tests
 - [ ] external configs
-- [ ] create custom practices with api and storage (now only 1 hardcoded)
+- [x] duration web format: 01h23m45s
