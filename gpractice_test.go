@@ -122,11 +122,13 @@ func TestDelete(t *testing.T) {
 }
 
 func TestGetReport(t *testing.T) {
+	var testItem = repo.Item{Id: 1, Date: DATE, Duration: DURATION}
+
 	tests := []struct {
 		name string
 		want repo.Report
 	}{
-		{"report", repo.Report{Days: 1, Since: DATE, Total: 15}},
+		{"report", repo.Report{Items: []repo.Item{testItem}, Days: 1, Since: DATE, Total: 15}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

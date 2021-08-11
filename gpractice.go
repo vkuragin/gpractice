@@ -72,7 +72,10 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 		total += v.Duration
 	}
 
+	sortByDate(items, true)
+
 	report := repo.Report{
+		Items: items,
 		Days:  days,
 		Since: earliest.Format(repo.DateFormat),
 		Total: total,

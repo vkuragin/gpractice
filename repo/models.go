@@ -16,8 +16,9 @@ type Item struct {
 	Duration int
 }
 
-// Report contains summary: total days, since first date, total duration
+// Report contains items and a summary: total days, since first date, total duration
 type Report struct {
+	Items []Item
 	Days  int
 	Since string
 	Total int
@@ -33,6 +34,7 @@ type ItemDto struct {
 
 // Report DTO contains summary: total days, since first date, total duration
 type ReportDto struct {
+	Items    []ItemDto
 	Days     int
 	Since    string
 	Total    int

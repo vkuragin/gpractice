@@ -197,13 +197,6 @@ func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData 
 
 	log.Printf("getAll\n")
 
-	items, err := gPractice.GetAll()
-	if err != nil {
-		log.Printf("Error: %v\n", err)
-		http.Error(w, "Error", http.StatusInternalServerError)
-		return pageData
-	}
-
 	report, err := gPractice.GetReport()
 	if err != nil {
 		log.Printf("Error: %v\n", err)
@@ -211,8 +204,8 @@ func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData 
 		return pageData
 	}
 
-	dtos := make([]repo.ItemDto, len(items))
-	for i, item := range items {
+	dtos := make([]repo.ItemDto, len(report.Items))
+	for i, item := range report.Items {
 		dtos[i] = repo.ItemToDto(item)
 	}
 	pageData.Items = dtos

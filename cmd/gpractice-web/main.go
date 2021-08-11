@@ -44,5 +44,5 @@ func main() {
 	router.HandleFunc("/app/{id}", appHandler.appDelete()).Methods(http.MethodDelete)
 
 	// run server
-	log.Fatal(http.ListenAndServe(":3000", router))
+	log.Fatal(http.ListenAndServe("localhost:3000", router))
 }
