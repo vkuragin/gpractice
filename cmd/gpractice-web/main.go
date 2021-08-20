@@ -7,6 +7,9 @@ import (
 	"github.com/vkuragin/gpractice/repo"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -26,9 +29,24 @@ func main() {
 	holder := tplHolder{refresh: *templateRefresh, tplPath: *templatePath}
 	router := configureRouter(gPractice, holder)
 
+	// listen on syscall to shutdown gracefully
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go cleanUp(signals, sqlRepo)
+
 	// run server
 	log.Print("web application started")
 	log.Fatal(http.ListenAndServe("localhost:3000", router))
+}
+
+func cleanUp(signals chan os.Signal, repo repo.Repository) {
+	received := <-signals
+	log.Printf("Received system signal: %s, cleaning up...", received)
+
+	repo.Close()
+
+	log.Print("Clean up is done. Bye...")
+	os.Exit(1)
 }
 
 func configureRouter(service gpractice.GPractice, holder tplHolder) http.Handler {
