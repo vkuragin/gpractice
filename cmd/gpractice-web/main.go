@@ -20,9 +20,21 @@ func main() {
 	templateRefresh := flag.Bool("tplfresh", false, "parse template each time")
 	flag.Parse()
 
+	// config
+	cfg, err := gpractice.LoadCfg("~/.gpractice/config.yaml")
+	if err != nil {
+		log.Fatalf("Cannot load config: %s", err)
+		os.Exit(1)
+	}
+
 	// initialize db
-	sqlRepo := &repo.MySQLRepo{}
-	sqlRepo.Init()
+	sqlRepo := &repo.MySQLRepo{DbUser: cfg.Db.UserName, DbPass: cfg.Db.UserPass, DbHost: cfg.Db.Host, DbPort: cfg.Db.Port, DbName: cfg.Db.Name}
+	err = sqlRepo.Init()
+	if err != nil {
+		log.Fatalf("Cannot initialize db: %s", err)
+		os.Exit(1)
+	}
+	defer sqlRepo.Close()
 
 	// initialize services
 	gPractice := gpractice.GPractice{sqlRepo}
@@ -36,7 +48,7 @@ func main() {
 
 	// run server
 	log.Print("web application started")
-	log.Fatal(http.ListenAndServe("localhost:3000", router))
+	log.Fatal(http.ListenAndServe(cfg.Server.Host+":"+cfg.Server.Port, router))
 }
 
 func cleanUp(signals chan os.Signal, repo repo.Repository) {

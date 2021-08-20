@@ -36,9 +36,20 @@ func main() {
 func execute(action string, id int, date string, minutes int, file string) {
 	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
 
+	// config
+	cfg, err := gpractice.LoadCfg("~/.gpractice/config.yaml")
+	if err != nil {
+		log.Fatalf("Cannot load config: %s", err)
+		os.Exit(1)
+	}
+
 	// initialize db
-	sqlRepo := &repo.MySQLRepo{}
-	sqlRepo.Init()
+	sqlRepo := &repo.MySQLRepo{DbUser: cfg.Db.UserName, DbPass: cfg.Db.UserPass, DbHost: cfg.Db.Host, DbPort: cfg.Db.Port, DbName: cfg.Db.Name}
+	err = sqlRepo.Init()
+	if err != nil {
+		log.Fatalf("Cannot initialize db: %s", err)
+		os.Exit(1)
+	}
 	defer sqlRepo.Close()
 
 	gp := gpractice.GPractice{Repo: sqlRepo}

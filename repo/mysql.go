@@ -9,20 +9,19 @@ import (
 
 // MySQL implementation of Repository interface
 type MySQLRepo struct {
-	db *sql.DB
+	DbUser string
+	DbPass string
+	DbHost string
+	DbPort string
+	DbName string
+	db     *sql.DB
 }
 
 // Initialize MySQL repository and verify connection
-func (r *MySQLRepo) Init() {
-	//TODO: extract properties
-	dbDriver := "mysql"
-	dbUser := "gpractice"
-	dbPass := "123"
-	dbUrl := "localhost:3306"
-	dbName := "gpractice"
-	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp("+dbUrl+")/"+dbName)
+func (r *MySQLRepo) Init() error {
+	db, err := sql.Open("mysql", r.DbUser+":"+r.DbPass+"@tcp("+r.DbHost+":"+r.DbPort+")/"+r.DbName)
 	if err != nil {
-		panic("failed to initialize db connection: " + err.Error())
+		return err
 	}
 
 	// See "Important settings" section.
@@ -33,11 +32,11 @@ func (r *MySQLRepo) Init() {
 	// verify connection
 	err = db.Ping()
 	if err != nil {
-		panic("failed to initialize db connection: " + err.Error())
+		return err
 	}
 
 	r.db = db
-	return
+	return nil
 }
 
 func (r *MySQLRepo) Save(item Item) (Item, error) {
