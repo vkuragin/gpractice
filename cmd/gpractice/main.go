@@ -35,7 +35,13 @@ func main() {
 
 func execute(action string, id int, date string, minutes int, file string) {
 	log.Println(fmt.Sprintf("Executing action [%s] with values: [%v, %v, %v]", action, id, date, minutes))
-	gp := initGPractice()
+
+	// initialize db
+	sqlRepo := &repo.MySQLRepo{}
+	sqlRepo.Init()
+	defer sqlRepo.Close()
+
+	gp := gpractice.GPractice{Repo: sqlRepo}
 
 	item := repo.Item{Id: int(id), Date: date, Duration: minutes * 60}
 	switch Action(action) {
@@ -64,13 +70,4 @@ func execute(action string, id int, date string, minutes int, file string) {
 		log.Fatalf("Unknown action: %v\n", action)
 		os.Exit(1)
 	}
-}
-
-func initGPractice() gpractice.GPractice {
-	//m := make(map[uint64]model.Item, 0)
-	//gp := gpractice.GPractice{Repo: &repo.StubRepo{m}}
-	sqlRepo := &repo.MySQLRepo{}
-	sqlRepo.Init()
-	gp := gpractice.GPractice{Repo: sqlRepo}
-	return gp
 }

@@ -12,21 +12,30 @@ type MySQLRepo struct {
 	db *sql.DB
 }
 
+// Initialize MySQL repository and verify connection
 func (r *MySQLRepo) Init() {
 	//TODO: extract properties
 	dbDriver := "mysql"
 	dbUser := "gpractice"
 	dbPass := "123"
+	dbUrl := "localhost:3306"
 	dbName := "gpractice"
-	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
+	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp("+dbUrl+")/"+dbName)
 	if err != nil {
-		panic("failed to initialize db connection")
+		panic("failed to initialize db connection: " + err.Error())
 	}
 
 	// See "Important settings" section.
-	db.SetConnMaxLifetime(time.Minute * 2)
+	db.SetConnMaxLifetime(time.Minute)
 	db.SetMaxOpenConns(3)
 	db.SetMaxIdleConns(3)
+
+	// verify connection
+	err = db.Ping()
+	if err != nil {
+		panic("failed to initialize db connection: " + err.Error())
+	}
+
 	r.db = db
 	return
 }
@@ -140,4 +149,15 @@ func (r *MySQLRepo) GetAll() ([]Item, error) {
 
 	log.Printf("GetAll: succesfully processed %v out of %v", len(items), count)
 	return items, nil
+}
+
+func (r *MySQLRepo) Close() {
+	if r.db == nil {
+		return
+	}
+	err := r.db.Close()
+	if err != nil {
+		log.Printf("Failed to close db connection: %s", err.Error())
+	}
+	log.Print("Database connection is closed")
 }

@@ -13,6 +13,7 @@ type Repository interface {
 	Delete(id int) (bool, error)
 	Get(id int) (Item, error)
 	GetAll() ([]Item, error)
+	Close()
 }
 
 // Stub implementation of Repository interface (backed by map[int]Item)
@@ -50,6 +51,10 @@ func (r *StubRepo) GetAll() ([]Item, error) {
 		i++
 	}
 	return result, nil
+}
+
+func (r *StubRepo) Close() {
+	// no-op
 }
 
 func (r *StubRepo) nextId() int {

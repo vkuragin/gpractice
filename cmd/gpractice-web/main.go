@@ -10,23 +10,32 @@ import (
 )
 
 func main() {
-	log.Printf("starting\n")
+	log.Print("starting web application")
 
 	// parse flags
 	templatePath := flag.String("tplpath", "", "path to custom html template")
 	templateRefresh := flag.Bool("tplfresh", false, "parse template each time")
 	flag.Parse()
 
-	// initialize services
-	sqlRepo := repo.MySQLRepo{}
+	// initialize db
+	sqlRepo := &repo.MySQLRepo{}
 	sqlRepo.Init()
-	gPractice := gpractice.GPractice{&sqlRepo}
-	holder := tplHolder{refresh: *templateRefresh, tplPath: *templatePath}
 
+	// initialize services
+	gPractice := gpractice.GPractice{sqlRepo}
+	holder := tplHolder{refresh: *templateRefresh, tplPath: *templatePath}
+	router := configureRouter(gPractice, holder)
+
+	// run server
+	log.Print("web application started")
+	log.Fatal(http.ListenAndServe("localhost:3000", router))
+}
+
+func configureRouter(service gpractice.GPractice, holder tplHolder) http.Handler {
 	router := mux.NewRouter()
 
 	// rest api endpoints
-	restHandler := restHandler{gPractice}
+	restHandler := restHandler{service}
 	router.HandleFunc("/rest", restHandler.restAll()).Methods(http.MethodGet)
 	router.HandleFunc("/rest/", restHandler.restAll()).Methods(http.MethodGet)
 	router.HandleFunc("/rest", restHandler.restAdd()).Methods(http.MethodPost)
@@ -35,7 +44,7 @@ func main() {
 	router.HandleFunc("/rest/{id}", restHandler.restDelete()).Methods(http.MethodDelete)
 
 	// web app endpoints
-	appHandler := appHandler{gPractice, holder}
+	appHandler := appHandler{service, holder}
 	router.HandleFunc("/app", appHandler.appAll()).Methods(http.MethodGet)
 	router.HandleFunc("/app/", appHandler.appAll()).Methods(http.MethodGet)
 	router.HandleFunc("/app", appHandler.appAdd()).Methods(http.MethodPost)
@@ -43,6 +52,5 @@ func main() {
 	router.HandleFunc("/app/{id}", appHandler.appUpdate()).Methods(http.MethodPost, http.MethodPut)
 	router.HandleFunc("/app/{id}", appHandler.appDelete()).Methods(http.MethodDelete)
 
-	// run server
-	log.Fatal(http.ListenAndServe("localhost:3000", router))
+	return router
 }
