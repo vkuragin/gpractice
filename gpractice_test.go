@@ -4,12 +4,14 @@ import (
 	"github.com/vkuragin/gpractice/repo"
 	"reflect"
 	"testing"
+	"time"
 )
 
 const (
 	DATE     = "2020-10-31"
 	DATE2    = "1999-01-01"
 	DURATION = 15
+	FORMAT   = "2006-01-02"
 )
 
 var gPractice GPractice
@@ -77,27 +79,6 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetAll(t *testing.T) {
-	var testItem = repo.Item{Id: 1, Date: DATE, Duration: DURATION}
-
-	tests := []struct {
-		name string
-		want []repo.Item
-	}{
-		{"get all", []repo.Item{testItem}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			setupTestCase(t)
-			t.Logf("After testSetup: %v", items)
-
-			if got, _ := gPractice.GetAll(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetAll() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestDelete(t *testing.T) {
 	type args struct {
 		id int
@@ -128,12 +109,17 @@ func TestGetReport(t *testing.T) {
 		name string
 		want repo.Report
 	}{
-		{"report", repo.Report{Items: []repo.Item{testItem}, Days: 1, Since: DATE, Total: 15}},
+		{"report", repo.Report{Items: []repo.Item{testItem}, Days: 1, DateStart: DATE, DateEnd: DATE, Total: 15}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			setupTestCase(t)
-			if got, _ := gPractice.GetReport(); !reflect.DeepEqual(got, tt.want) {
+			date, e := time.Parse(FORMAT, DATE)
+			if e != nil {
+				t.Errorf("Error: %v", e)
+				return
+			}
+			if got, _ := gPractice.GetReport(date, date); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetReport() = %v, want %v", got, tt.want)
 			}
 		})

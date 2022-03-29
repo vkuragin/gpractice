@@ -18,10 +18,11 @@ type Item struct {
 
 // Report contains items and a summary: total days, since first date, total duration
 type Report struct {
-	Items []Item
-	Days  int
-	Since string
-	Total int
+	Items     []Item
+	Days      int
+	DateStart string
+	DateEnd   string
+	Total     int
 }
 
 // Practice item DTO
@@ -34,11 +35,12 @@ type ItemDto struct {
 
 // Report DTO contains summary: total days, since first date, total duration
 type ReportDto struct {
-	Items    []ItemDto
-	Days     int
-	Since    string
-	Total    int
-	TotalStr string
+	Items     []ItemDto
+	Days      int
+	DateStart string
+	DateEnd   string
+	Total     int
+	TotalStr  string
 }
 
 // PageData - data to be rendered
@@ -76,10 +78,11 @@ func DtoToItem(dto ItemDto) Item {
 
 func ReportToDto(r Report) ReportDto {
 	return ReportDto{
-		Days:     r.Days,
-		Since:    r.Since,
-		Total:    r.Total,
-		TotalStr: SecToDurationStr(r.Total),
+		Days:      r.Days,
+		DateStart: r.DateStart,
+		DateEnd:   r.DateEnd,
+		Total:     r.Total,
+		TotalStr:  SecToDurationStr(r.Total),
 	}
 }
 

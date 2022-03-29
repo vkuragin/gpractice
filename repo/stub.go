@@ -2,17 +2,19 @@ package repo
 
 import (
 	"errors"
+	"time"
 )
 
 const (
-	NewId = 0
+	NewId  = 0
+	FORMAT = "2006-01-02"
 )
 
 type Repository interface {
 	Save(item Item) (Item, error)
 	Delete(id int) (bool, error)
 	Get(id int) (Item, error)
-	GetAll() ([]Item, error)
+	GetAll(from time.Time, to time.Time) ([]Item, error)
 	Close()
 }
 
@@ -44,9 +46,16 @@ func (r *StubRepo) Get(id int) (Item, error) {
 	return Item{}, errors.New("not found")
 }
 
-func (r *StubRepo) GetAll() ([]Item, error) {
+func (r *StubRepo) GetAll(from time.Time, to time.Time) ([]Item, error) {
 	result, i := make([]Item, len(r.Map)), 0
 	for _, v := range r.Map {
+		date, e := time.Parse(FORMAT, v.Date)
+		if e != nil {
+			return nil, e
+		}
+		if date.Before(from) || date.After(to) {
+			continue
+		}
 		result[i] = v
 		i++
 	}

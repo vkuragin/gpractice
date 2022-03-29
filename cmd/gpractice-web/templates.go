@@ -111,12 +111,14 @@ var defaultHtmlTemplate = `
             <div class="report">
               <div class="row">
                   <h4 class="col">days</h4>
-                  <h4 class="col">since</h4>
+                  <h4 class="col">start</h4>
+                  <h4 class="col">end</h4>
                   <h4 class="col">total</h4>
               </div>
               <div class="row">
                   <p class="col">{{ .Report.Days }}</p>
-                  <p class="col">{{ .Report.Since }}</p>
+                  <p class="col">{{ .Report.DateStart }}</p>
+                  <p class="col">{{ .Report.DateEnd }}</p>
                   <p class="col">{{ .Report.TotalStr }}</p>
               </div>
             </div>

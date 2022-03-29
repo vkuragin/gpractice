@@ -120,16 +120,16 @@ func (r *MySQLRepo) Get(id int) (Item, error) {
 	return item, nil
 }
 
-func (r *MySQLRepo) GetAll() ([]Item, error) {
+func (r *MySQLRepo) GetAll(from time.Time, to time.Time) ([]Item, error) {
 	var items []Item
 
-	q := "SELECT id, date, duration FROM practice"
+	q := "SELECT id, date, duration FROM practice WHERE date >= ? AND date <= ? ORDER BY id"
 	stmt, err := r.db.Prepare(q)
 	if err != nil {
 		return items, err
 	}
 
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(from, to)
 	if err != nil {
 		return items, err
 	}

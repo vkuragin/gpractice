@@ -32,22 +32,14 @@ func (gp *GPractice) Get(id int) (repo.Item, error) {
 	return item, err
 }
 
-func (gp *GPractice) GetAll() ([]repo.Item, error) {
-	log.Printf("Getting all items\n")
-	items, err := gp.Repo.GetAll()
-	sortByDate(items, true)
-	//log.Printf("Getting all items result: %v\n", items)
-	return items, err
-}
-
 func (gp *GPractice) Delete(id int) (bool, error) {
 	log.Println(fmt.Sprintf("Deleting item by id %v\n", id))
 	return gp.Repo.Delete(id)
 }
 
-func (gp *GPractice) GetReport() (repo.Report, error) {
+func (gp *GPractice) GetReport(from time.Time, to time.Time) (repo.Report, error) {
 	log.Printf("Getting report\n")
-	items, err := gp.Repo.GetAll()
+	items, err := gp.Repo.GetAll(from, to)
 	if err != nil {
 		return repo.Report{}, err
 	}
@@ -75,10 +67,11 @@ func (gp *GPractice) GetReport() (repo.Report, error) {
 	sortByDate(items, true)
 
 	report := repo.Report{
-		Items: items,
-		Days:  days,
-		Since: earliest.Format(repo.DateFormat),
-		Total: total,
+		Items:     items,
+		Days:      days,
+		DateStart: from.Format(repo.FORMAT),
+		DateEnd:   to.Format(repo.FORMAT),
+		Total:     total,
 	}
 	//log.Printf("Getting report result: %v\n", report)
 	return report, nil
@@ -114,7 +107,6 @@ func (gp *GPractice) Import(filePath string) error {
 		}
 	}
 	log.Printf("records: %v\n", records)
-
 	return nil
 }
 
@@ -127,7 +119,7 @@ func (gp *GPractice) Export(filePath string) error {
 	defer closeFile(file)
 
 	// get all records
-	items, err := gp.Repo.GetAll()
+	items, err := gp.Repo.GetAll(time.Unix(0, 0), time.Now())
 	if err != nil {
 		return err
 	}

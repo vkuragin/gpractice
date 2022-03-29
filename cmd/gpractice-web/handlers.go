@@ -19,7 +19,7 @@ type restHandler struct {
 
 func (h *restHandler) restAll() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getAll(w, h.gp)
+		pageData := getAll(r, w, h.gp)
 		jsonBytes, err := json.Marshal(pageData)
 		if err != nil {
 			log.Printf("Json error: %v\n", err)
@@ -96,7 +96,9 @@ type appHandler struct {
 
 func (h *appHandler) appAll() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageData := getAll(w, h.gp)
+		pageData := getAll(r, w, h.gp)
+
+		log.Printf("params: %v\n", r.URL.Query())
 		tpl, err := h.holder.getTemplate()
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
@@ -119,7 +121,7 @@ func (h *appHandler) appAdd() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 		item = addItem(w, h.gp, item)
-		pageData := getAll(w, h.gp)
+		pageData := getAll(r, w, h.gp)
 
 		tpl, err := h.holder.getTemplate()
 		if err != nil {
@@ -164,7 +166,7 @@ func (h *appHandler) appUpdate() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 		item = addItem(w, h.gp, item)
-		pageData := getAll(w, h.gp)
+		pageData := getAll(r, w, h.gp)
 
 		tpl, err := h.holder.getTemplate()
 		if err != nil {
@@ -190,14 +192,16 @@ func (h *appHandler) appDelete() func(http.ResponseWriter, *http.Request) {
 
 // ---- helper functions ----//
 
-func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData {
+func getAll(r *http.Request, w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData {
 	item := repo.ItemDto{Date: time.Now().Format(repo.DateFormat)}
 	pageData := repo.PageData{Item: item}
 	var err error
 
 	log.Printf("getAll\n")
 
-	report, err := gPractice.GetReport()
+	from := parseTime(r, "from", time.Unix(0, 0))
+	to := parseTime(r, "to", time.Now())
+	report, err := gPractice.GetReport(from, to)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 		http.Error(w, "Error", http.StatusInternalServerError)
@@ -211,6 +215,19 @@ func getAll(w http.ResponseWriter, gPractice gpractice.GPractice) repo.PageData 
 	pageData.Items = dtos
 	pageData.Report = repo.ReportToDto(report)
 	return pageData
+}
+
+func parseTime(r *http.Request, name string, def time.Time) time.Time {
+	param := r.URL.Query().Get(name)
+	if param == "" {
+		return def
+	}
+	res, e := time.Parse(repo.FORMAT, param)
+	if e != nil {
+		log.Printf("Wrong date format: %v", e)
+		return def
+	}
+	return res
 }
 
 func parseJson(w http.ResponseWriter, r *http.Request) (repo.ItemDto, bool) {

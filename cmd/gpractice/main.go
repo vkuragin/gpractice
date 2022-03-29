@@ -13,8 +13,7 @@ import (
 type Action string
 
 const (
-	ALL    Action = "all"
-	ADD           = "add"
+	ADD    Action = "add"
 	GET           = "get"
 	DEL           = "del"
 	REPORT        = "report"
@@ -23,7 +22,7 @@ const (
 )
 
 func main() {
-	actionFlag := flag.String("action", string(ALL), "one of possible actions: all, add, del, get, report, import, export")
+	actionFlag := flag.String("action", string(REPORT), "one of possible actions: add, del, get, report, import, export")
 	dateFlag := flag.String("date", time.Now().Format(repo.DateFormat), "practice date yyyy-MM-dd")
 	minutesFlag := flag.Int("minutes", 0, "practice time in minutes")
 	idFlag := flag.Int("id", 0, "id")
@@ -56,9 +55,6 @@ func execute(action string, id int, date string, minutes int, file string) {
 
 	item := repo.Item{Id: int(id), Date: date, Duration: minutes * 60}
 	switch Action(action) {
-	case ALL:
-		all, err := gp.GetAll()
-		log.Printf("result: %v\n, error: %v\n", all, err)
 	case ADD:
 		item, err := gp.Save(item)
 		log.Printf("result: %v\n, error: %v\n", item, err)
@@ -69,7 +65,7 @@ func execute(action string, id int, date string, minutes int, file string) {
 		res, err := gp.Delete(item.Id)
 		log.Printf("result: %v\n, error: %v\n", res, err)
 	case REPORT:
-		report, err := gp.GetReport()
+		report, err := gp.GetReport(time.Unix(0, 0), time.Now())
 		log.Printf("result: %v\n, error: %v\n", report, err)
 	case IMPORT:
 		err := gp.Import(file)
