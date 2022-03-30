@@ -5,6 +5,7 @@ import (
 )
 
 var defaultHtmlTemplate = `
+<!DOCTYPE html>
 <html>
     <head>
         <title>GPractice</title>
@@ -25,10 +26,11 @@ var defaultHtmlTemplate = `
               display: block;
               margin: auto;
             }
-            table, tbody, thead, form,.report {
+            table, tbody, thead, form,.report,.date {
               margin: auto;
               width: 600px;
-              /* border: 1px solid #ccc; */
+              padding: 5px;
+              border: 0.5em solid #ccc;
             }
             .fdiv {
               display: flex;
@@ -62,15 +64,22 @@ var defaultHtmlTemplate = `
             }
         </style>
         <script type="application/javascript">
-            // stupid HTML doesn't know anything about DELETE methods
-            // so have to use js...
             function deleteFunc(id) {
-                console.log("deleting item " + id);
+                console.log("deleting item: " + id);
                 var xhttp = new XMLHttpRequest();
                 xhttp.open("DELETE", "/app/" + id);
+                xhttp.onloadend = function() {
+                  console.log("delete completed")
+                  goFunc();
+                }
                 xhttp.send();
-                console.log("sent");
-                window.location.assign("/app");
+            }
+
+            function goFunc() {
+                var dateStart = document.getElementById("dateStartInput").value;
+                var dateEnd = document.getElementById("dateEndInput").value;
+                console.log("date range: " + dateStart + " - " + dateEnd);
+                window.location.assign("/app?from="+dateStart+"&to="+dateEnd);
             }
         </script>
         <link rel="icon" type="image/png" href="data:image/png;base64,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">
@@ -80,7 +89,20 @@ var defaultHtmlTemplate = `
       <div class="root">
         <h1>Default template</h1>
 
-        <a href="/app" style="padding: 10px;">home</a>
+        <div class="date">
+          <a href="/app">home</a>
+
+          <div class="fdiv">
+              <label for="dateStartInput">Date start:</label>
+              <input type="date" id="dateStartInput" name="dateStartInput" value="{{ .Report.DateStart }}">
+          </div>
+          <div class="fdiv">
+              <label for="dateEndInput">Date end:</label>
+              <input type="date" id="dateEndInput" name="dateEndInput" value="{{ .Report.DateEnd }}">
+          </div>
+
+          <input type="button" onclick="goFunc();" value="go"/>
+        </div>
 
         <div class="content">
           <form action="/app" method="post">

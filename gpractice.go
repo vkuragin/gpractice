@@ -119,7 +119,7 @@ func (gp *GPractice) Export(filePath string) error {
 	defer closeFile(file)
 
 	// get all records
-	items, err := gp.Repo.GetAll(time.Unix(0, 0), time.Now())
+	items, err := gp.Repo.GetAll(time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local), time.Now())
 	if err != nil {
 		return err
 	}

@@ -186,7 +186,6 @@ func (h *appHandler) appUpdate() func(http.ResponseWriter, *http.Request) {
 func (h *appHandler) appDelete() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		deleteItem(w, h.gp, r)
-		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
@@ -199,7 +198,7 @@ func getAll(r *http.Request, w http.ResponseWriter, gPractice gpractice.GPractic
 
 	log.Printf("getAll\n")
 
-	from := parseTime(r, "from", time.Unix(0, 0))
+	from := parseTime(r, "from", time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local))
 	to := parseTime(r, "to", time.Now())
 	report, err := gPractice.GetReport(from, to)
 	if err != nil {
@@ -355,6 +354,4 @@ func deleteItem(w http.ResponseWriter, gPractice gpractice.GPractice, r *http.Re
 		return
 	}
 	log.Printf("Delete result: %v\n", result)
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
