@@ -198,9 +198,7 @@ func getAll(r *http.Request, w http.ResponseWriter, gPractice gpractice.GPractic
 
 	log.Printf("getAll\n")
 
-	from := parseTime(r, "from", time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local))
-	to := parseTime(r, "to", time.Now())
-	report, err := gPractice.GetReport(from, to)
+	report, err := gPractice.GetReport(parseTime(r, "from"), parseTime(r, "to"))
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 		http.Error(w, "Error", http.StatusInternalServerError)
@@ -216,17 +214,17 @@ func getAll(r *http.Request, w http.ResponseWriter, gPractice gpractice.GPractic
 	return pageData
 }
 
-func parseTime(r *http.Request, name string, def time.Time) time.Time {
+func parseTime(r *http.Request, name string) *time.Time {
 	param := r.URL.Query().Get(name)
 	if param == "" {
-		return def
+		return nil
 	}
 	res, e := time.Parse(repo.FORMAT, param)
 	if e != nil {
 		log.Printf("Wrong date format: %v", e)
-		return def
+		return nil
 	}
-	return res
+	return &res
 }
 
 func parseJson(w http.ResponseWriter, r *http.Request) (repo.ItemDto, bool) {

@@ -119,7 +119,7 @@ func TestGetReport(t *testing.T) {
 				t.Errorf("Error: %v", e)
 				return
 			}
-			if got, _ := gPractice.GetReport(date, date); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := gPractice.GetReport(&date, &date); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetReport() = %v, want %v", got, tt.want)
 			}
 		})

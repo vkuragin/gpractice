@@ -1,7 +1,7 @@
 #GPractice
 
 ###Installation
-1. from `go install -v ...`
+1. `make all` (`make gpractice` or `make gpractice-web` to install CLI or WEB only)
 2. place configuration file `config.yaml` to `~/.gpractice/` directory:
    - `cd ~`
    - `mkdir .gpractice`

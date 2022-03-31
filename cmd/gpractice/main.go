@@ -65,7 +65,7 @@ func execute(action string, id int, date string, minutes int, file string) {
 		res, err := gp.Delete(item.Id)
 		log.Printf("result: %v\n, error: %v\n", res, err)
 	case REPORT:
-		report, err := gp.GetReport(time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local), time.Now())
+		report, err := gp.GetReport(nil, nil)
 		log.Printf("result: %v\n, error: %v\n", report, err)
 	case IMPORT:
 		err := gp.Import(file)

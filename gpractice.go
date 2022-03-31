@@ -37,9 +37,19 @@ func (gp *GPractice) Delete(id int) (bool, error) {
 	return gp.Repo.Delete(id)
 }
 
-func (gp *GPractice) GetReport(from time.Time, to time.Time) (repo.Report, error) {
-	log.Printf("Getting report\n")
-	items, err := gp.Repo.GetAll(from, to)
+func (gp *GPractice) GetReport(from *time.Time, to *time.Time) (repo.Report, error) {
+	// date range (defaults to current year)
+	now := time.Now()
+	if from == nil {
+		t := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		from = &t
+	}
+	if to == nil {
+		to = &now
+	}
+
+	log.Printf("Getting report: %v - %v\n", from, to)
+	items, err := gp.Repo.GetAll(*from, *to)
 	if err != nil {
 		return repo.Report{}, err
 	}
