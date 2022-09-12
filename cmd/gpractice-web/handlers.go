@@ -98,7 +98,6 @@ func (h *appHandler) appAll() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pageData := getAll(r, w, h.gp)
 
-		log.Printf("params: %v\n", r.URL.Query())
 		tpl, err := h.holder.getTemplate()
 		if err != nil {
 			log.Printf("Template error: %v\n", err)
@@ -195,8 +194,6 @@ func getAll(r *http.Request, w http.ResponseWriter, gPractice gpractice.GPractic
 	item := repo.ItemDto{Date: time.Now().Format(repo.DateFormat)}
 	pageData := repo.PageData{Item: item}
 	var err error
-
-	log.Printf("getAll\n")
 
 	report, err := gPractice.GetReport(parseTime(r, "from"), parseTime(r, "to"))
 	if err != nil {

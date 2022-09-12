@@ -1,4 +1,7 @@
-all: gpractice gpractice-web
+all: test gpractice gpractice-web
+
+test:
+	go test -v .
 
 gpractice: ./cmd/gpractice/main.go
 	go install -v ./cmd/gpractice/
