@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Main service
+// GPractice - the main service
 type GPractice struct {
 	// Repository, implementations: StubRepo, MySQLRepo
 	Repo repo.Repository
@@ -41,11 +41,13 @@ func (gp *GPractice) GetReport(from *time.Time, to *time.Time) (repo.Report, err
 	// date range (defaults to current year)
 	now := time.Now()
 	if from == nil {
-		t := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		t := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 		from = &t
 	}
 	if to == nil {
-		to = &now
+		tomorrow := now.AddDate(0, 0, 1)
+		t := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, time.UTC)
+		to = &t
 	}
 
 	log.Printf("Getting report: %v - %v\n", from, to)
